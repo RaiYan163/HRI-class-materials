@@ -6,3 +6,9 @@ opencv-python==4.10.0.84
 
 # WSGI server (optional but recommended over Flask dev server for demos)
 waitress==3.0.0
+
+# Speech-to-text
+faster-whisper==1.1.1
+
+# faster-whisper 1.1.1 calls av.open(metadata_errors=...), which newer PyAV (19.0.1 tested) rejects
+av==16.1.0

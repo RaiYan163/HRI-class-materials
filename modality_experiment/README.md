@@ -175,3 +175,40 @@ This demo is intentionally minimal. Possible extensions:
 
 Raiyan — ATR Lab, Kent State University  
 HRI Class Demo · 2026
+
+---
+
+## Running Individual Modality Servers (Option B)
+
+Each modality can be run as a standalone server for focused demos:
+
+### Video Stream Only
+```bash
+cd modality_experiment
+python server_video.py
+```
+Opens at: http://localhost:5001
+
+### Speech to Text Only
+```bash
+cd modality_experiment
+python server_stt.py
+```
+Opens at: http://localhost:5002
+
+The STT server loads the Whisper `base` model on startup (~74MB download on first run).
+Click **Start**, speak, then click **Stop & Transcribe**.
+Each transcription appears as a chat bubble in the log.
+
+### STT Parameters
+| Parameter | Value | Reason |
+|---|---|---|
+| Model | `base` | Best balance of speed and accuracy on CPU |
+| Language | `en` (English, fixed) | Avoids language detection overhead |
+| VAD filter | `on` | Skips silence — cleaner output |
+| Beam size | `5` | Standard decoding quality |
+| Device | CPU | No GPU required |
+| Precision | int8 | Quantized for faster CPU inference |
+
+### Combined Demo (coming soon)
+`server_full.py` on port `5003` — video stream + STT + TTS in one dashboard.
