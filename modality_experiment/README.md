@@ -13,6 +13,7 @@ Each modality is its own standalone server. They share no state.
 | `server_video.py` | 5001 | Video stream only (same port as `server.py`, so run one or the other) |
 | `server_stt.py` | 5002 | Speech to text, live in the browser |
 | `server_tts.py` | 5003 | Text to speech with selectable voices |
+| `server_full.py` | 5004 | Central server: video + speech to text + text to speech in one dashboard |
 
 The first sections below describe the video stream. The speech sections start at **Running Individual Modality Servers**.
 
@@ -280,5 +281,20 @@ Voice models (~60MB each) download automatically from HuggingFace on first use a
 | Output file | `temp/output.wav`, overwritten on every Send |
 | Voice download | Automatic (HuggingFace) |
 
-### Combined Demo (not built yet)
-A single dashboard with video, STT and TTS together is planned. It has no server yet, and its port is not decided (5001–5003 are taken).
+### Central Server (all three modalities)
+```bash
+cd modality_experiment
+python server_full.py
+```
+Opens at: http://localhost:5004
+
+One page with three cards plus a shared system log:
+- **Vision**: pick the camera and FPS in the terminal at startup, then click **Watch Video Stream**
+- **Speech to text**: **Start** / **Stop**, live transcript as in `server_stt.py`. **→ TTS** copies the transcript into the speech box
+- **Text to speech**: choose a voice, type text, click **Speak** (or Cmd/Ctrl + Enter). The server synthesizes with Piper and the page plays it. **Replay** plays the last audio again
+
+The **System log** shows timestamped entries from all three modalities, tagged `[VIDEO]`, `[STT]` and `[TTS]`, and the same lines are printed in the server console.
+
+It loads Whisper at startup and each Piper voice on first use, so it needs everything in `requirements.txt` and the same first-run downloads as the separate servers. It reuses `temp/frame.jpg`, `temp/output.wav` and `voices/`.
+
+If you keep the microphone on while the speech plays, the transcript will pick up the robot's own voice. Stop recording before you click Speak, or use headphones.

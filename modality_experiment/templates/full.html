@@ -1,0 +1,757 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Modality Dashboard — ATR Lab</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500&family=Orbitron:wght@500;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #2b1e3e;
+      --surface: #1a1228;
+      --accent: #4a4e8f;
+      --accent-hover: #5a5eaf;
+      --lavender: #a490c2;
+      --silver: #e6e6fa;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      background: var(--bg);
+      color: var(--silver);
+      font-family: 'Inter', sans-serif;
+    }
+
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 14px 28px;
+      background: var(--surface);
+      border-bottom: 1px solid var(--accent);
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-family: 'Orbitron', sans-serif;
+      font-size: 0.95rem;
+      letter-spacing: 0.04em;
+    }
+
+    .glow-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: radial-gradient(circle, #e6e6fa 0%, var(--lavender) 55%, transparent 100%);
+      animation: pulse 2s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { box-shadow: 0 0 4px 1px #a490c244; transform: scale(1); }
+      50% { box-shadow: 0 0 14px 5px #a490c288; transform: scale(1.2); }
+    }
+
+    #clock {
+      font-family: 'Orbitron', sans-serif;
+      color: var(--lavender);
+      font-size: 0.95rem;
+    }
+
+    main {
+      flex: 1;
+      width: 100%;
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 32px 20px;
+    }
+
+    .hero { text-align: center; margin-bottom: 28px; }
+
+    .hero h1 {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 2.2rem;
+      font-weight: 700;
+    }
+
+    .hero p { margin-top: 10px; color: var(--lavender); }
+
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+      align-items: start;
+    }
+
+    @media (max-width: 860px) { .grid { grid-template-columns: 1fr; } }
+
+    .card {
+      background: var(--surface);
+      border-radius: 16px;
+      border: 1px solid #4a4e8f44;
+      padding: 22px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      min-width: 0;
+    }
+
+    .card.wide { grid-column: 1 / -1; }
+
+    .card h2 {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 0.95rem;
+      font-weight: 500;
+      letter-spacing: 0.05em;
+      color: var(--lavender);
+    }
+
+    .label {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 0.7rem;
+      letter-spacing: 0.1em;
+      color: var(--lavender);
+      opacity: 0.85;
+      margin-bottom: -8px;
+    }
+
+    /* ── video ── */
+    .viewport {
+      width: 100%;
+      aspect-ratio: 4 / 3;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    #stream {
+      display: none;
+      max-width: 100%;
+      max-height: 100%;
+      border: 2px solid var(--accent);
+      border-radius: 12px;
+      box-shadow: 0 0 24px #a490c222;
+    }
+
+    #placeholder {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: 2px dashed var(--lavender);
+      border-radius: 12px;
+      color: var(--lavender);
+      font-family: 'Orbitron', sans-serif;
+      letter-spacing: 0.05em;
+    }
+
+    /* ── chat ── */
+    .chat-log {
+      height: 220px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      padding: 14px;
+      background: #2b1e3e;
+      border: 1px solid #4a4e8f44;
+      border-radius: 12px;
+    }
+
+    .bubble { display: flex; align-items: flex-start; gap: 10px; animation: fadeIn 0.3s ease; }
+    .bubble-icon { font-size: 1.2rem; flex-shrink: 0; margin-top: 2px; }
+
+    .bubble-text {
+      background: #3a2a54;
+      border-radius: 0 12px 12px 12px;
+      padding: 10px 14px;
+      font-size: 0.92rem;
+      line-height: 1.6;
+      max-width: 90%;
+      border: 1px solid #4a4e8f55;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(6px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .chat-empty {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      color: var(--lavender);
+      opacity: 0.5;
+      font-style: italic;
+      font-size: 0.9rem;
+    }
+
+    /* ── controls ── */
+    .controls { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+    .controls .spacer { flex: 1; }
+
+    button {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 0.82rem;
+      color: var(--silver);
+      background: var(--accent);
+      border: 2px solid var(--accent);
+      border-radius: 8px;
+      padding: 10px 20px;
+      cursor: pointer;
+      transition: background 0.2s, box-shadow 0.2s;
+    }
+
+    button:hover:not(:disabled) {
+      background: var(--accent-hover);
+      border-color: var(--accent-hover);
+      box-shadow: 0 0 16px #a490c255;
+    }
+
+    button:disabled { opacity: 0.4; cursor: not-allowed; }
+
+    .btn-outline { background: transparent; border-color: var(--lavender); color: var(--lavender); }
+    .btn-outline:hover:not(:disabled) { background: #a490c222; border-color: var(--lavender); }
+
+    .btn-clear {
+      background: transparent;
+      border-color: transparent;
+      color: var(--lavender);
+      opacity: 0.7;
+      padding: 8px 12px;
+      font-size: 0.75rem;
+    }
+
+    .btn-clear:hover:not(:disabled) {
+      background: transparent;
+      border-color: transparent;
+      box-shadow: none;
+      opacity: 1;
+    }
+
+    .status {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding-top: 14px;
+      border-top: 1px solid #4a4e8f66;
+      color: var(--lavender);
+      font-size: 0.85rem;
+    }
+
+    .dot { width: 10px; height: 10px; border-radius: 50%; background: #888888; flex-shrink: 0; }
+    .dot.pulse { animation: pulse 1.2s ease-in-out infinite; }
+
+    /* ── tts ── */
+    textarea, select {
+      width: 100%;
+      font-family: 'Inter', sans-serif;
+      font-size: 0.92rem;
+      color: var(--silver);
+      background: #2b1e3e;
+      border: 1px solid #4a4e8f66;
+      border-radius: 8px;
+      padding: 10px 14px;
+      outline: none;
+    }
+
+    textarea { min-height: 84px; resize: vertical; }
+
+    textarea:focus, select:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 2px #4a4e8f33;
+    }
+
+    .tts-row { display: flex; align-items: center; gap: 12px; }
+    .tts-row .label { margin: 0; }
+    .tts-row select { flex: 1; width: auto; }
+
+    /* ── shared log ── */
+    .log-entries {
+      height: 190px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      font-size: 0.82rem;
+    }
+
+    .log-entry {
+      display: flex;
+      gap: 10px;
+      align-items: baseline;
+      padding: 3px 0;
+      border-bottom: 1px solid #4a4e8f22;
+    }
+
+    .log-time { color: var(--lavender); opacity: 0.7; min-width: 60px; }
+
+    .log-badge {
+      font-size: 0.7rem;
+      padding: 1px 7px;
+      border-radius: 999px;
+      font-family: 'Orbitron', sans-serif;
+      min-width: 58px;
+      text-align: center;
+    }
+
+    .log-badge.info    { background: #4a4e8f33; color: var(--lavender); }
+    .log-badge.success { background: #1a3a2a;   color: #3fb950; }
+    .log-badge.error   { background: #3a1a1a;   color: #e5484d; }
+
+    .log-msg { color: var(--silver); opacity: 0.85; word-break: break-word; }
+
+    footer { text-align: center; padding: 18px; color: var(--lavender); font-size: 0.85rem; }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="brand"><span class="glow-dot"></span>ATR Lab — Modality Experiment</div>
+    <div id="clock">--:--:--</div>
+  </header>
+
+  <main>
+    <section class="hero">
+      <h1>Modality Dashboard</h1>
+      <p>Vision · Speech to text (Whisper) · Text to speech (Piper)</p>
+    </section>
+
+    <div class="grid">
+
+      <!-- VIDEO -->
+      <section class="card">
+        <h2>📷 VISION</h2>
+        <div class="viewport">
+          <img id="stream" alt="Live camera stream">
+          <div id="placeholder">Stream inactive</div>
+        </div>
+        <div class="controls">
+          <button id="watchBtn">Watch Video Stream</button>
+          <button id="stopStreamBtn" class="btn-outline" style="display:none">Stop Stream</button>
+        </div>
+        <div class="status">
+          <span class="dot" id="videoDot" style="background:#e5484d"></span>
+          <span id="videoStatus">Disconnected</span>
+        </div>
+      </section>
+
+      <!-- STT -->
+      <section class="card">
+        <h2>🎙 SPEECH TO TEXT</h2>
+        <div class="label">TRANSCRIPT</div>
+        <div class="chat-log" id="sttLog">
+          <div class="chat-empty">Press Start and begin speaking — text appears as you talk...</div>
+        </div>
+        <div class="controls">
+          <button id="startBtn">🎙 Start</button>
+          <button id="stopBtn" class="btn-outline" disabled>⏹ Stop</button>
+          <button id="useTextBtn" class="btn-outline" disabled title="Copy the transcript into the speech box">→ TTS</button>
+          <div class="spacer"></div>
+          <button id="sttClearBtn" class="btn-clear">Clear</button>
+        </div>
+        <div class="status">
+          <span class="dot" id="sttDot"></span>
+          <span id="sttStatus">Ready</span>
+        </div>
+      </section>
+
+      <!-- TTS -->
+      <section class="card wide">
+        <h2>🔊 TEXT TO SPEECH</h2>
+        <div class="tts-row">
+          <span class="label">VOICE</span>
+          <select id="voiceSelect"></select>
+        </div>
+        <textarea id="ttsInput" placeholder="Type something for the robot to say... (Cmd/Ctrl + Enter to speak)"></textarea>
+        <div class="controls">
+          <button id="speakBtn">🔊 Speak</button>
+          <button id="replayBtn" class="btn-outline" disabled>↻ Replay</button>
+          <button id="stopSpeakBtn" class="btn-outline" disabled>⏹ Stop</button>
+        </div>
+        <div class="status">
+          <span class="dot" id="ttsDot"></span>
+          <span id="ttsStatus">Ready</span>
+        </div>
+      </section>
+
+      <!-- SHARED LOG -->
+      <section class="card wide">
+        <h2>SYSTEM LOG</h2>
+        <div class="log-entries" id="logEntries" aria-live="polite"></div>
+      </section>
+
+    </div>
+  </main>
+
+  <footer>HRI Class Demo · Kent State University</footer>
+
+  <script>
+    const $ = (id) => document.getElementById(id);
+    const pad = (n) => String(n).padStart(2, '0');
+
+    // ── Clock ──────────────────────────────────────────
+    function updateClock() {
+      const d = new Date();
+      $('clock').textContent = `${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
+    }
+    updateClock();
+    setInterval(updateClock, 1000);
+
+    // ── Shared log: the server holds it, the page polls /logs ──
+    // Page events are posted to /log so video, STT and TTS all land in one place
+    // (and in the server console).
+    function log(kind, tag, msg) {
+      const level = kind === 'error' ? 'error' : (kind === 'text' ? 'success' : 'info');
+      fetch('/log', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ tag, msg, level }),
+        keepalive: true,
+      }).then(fetchLogs).catch(() => {});
+    }
+
+    async function fetchLogs() {
+      try {
+        const res = await fetch('/logs');
+        const entries = await res.json();
+        const box = $('logEntries');
+        const prevTop = box.scrollTop;
+        const stick = prevTop + box.clientHeight >= box.scrollHeight - 8;
+        box.replaceChildren();
+        entries.slice(-60).forEach((e) => {
+          const row = document.createElement('div');
+          row.className = 'log-entry';
+          const time = document.createElement('span');
+          time.className = 'log-time';
+          time.textContent = e.time;
+          const badge = document.createElement('span');
+          badge.className = 'log-badge ' + (['info', 'success', 'error'].includes(e.level) ? e.level : 'info');
+          badge.textContent = e.level;
+          const msg = document.createElement('span');
+          msg.className = 'log-msg';
+          msg.textContent = e.message;       // textContent: never parsed as HTML
+          row.append(time, badge, msg);
+          box.appendChild(row);
+        });
+        box.scrollTop = stick ? box.scrollHeight : prevTop;   // don't yank the view if the user scrolled up
+      } catch (err) {
+        // server briefly unreachable: keep the old log and try again next tick
+      }
+    }
+    fetchLogs();
+    setInterval(fetchLogs, 2000);
+
+    // ── Small helpers ──────────────────────────────────
+    function setDot(dotId, textId, text, color, pulse) {
+      $(dotId).style.background = color;
+      $(textId).textContent = text;
+      $(dotId).classList.toggle('pulse', !!pulse);
+    }
+
+    // textContent, not innerHTML: transcripts, typed text and errors are never parsed as HTML
+    function addBubble(container, text) {
+      const empty = container.querySelector('.chat-empty');
+      if (empty) empty.remove();
+      const bubble = document.createElement('div');
+      bubble.className = 'bubble';
+      const icon = document.createElement('span');
+      icon.className = 'bubble-icon';
+      icon.textContent = '💬';
+      const body = document.createElement('div');
+      body.className = 'bubble-text';
+      body.textContent = text;
+      bubble.append(icon, body);
+      container.appendChild(bubble);
+      container.scrollTop = container.scrollHeight;
+      return body;
+    }
+
+    // ══════════════ VIDEO ══════════════
+    const img = $('stream');
+    const placeholder = $('placeholder');
+    const watchBtn = $('watchBtn');
+    const stopStreamBtn = $('stopStreamBtn');
+    let streamInterval = null;
+
+    watchBtn.addEventListener('click', () => {
+      placeholder.style.display = 'none';
+      img.style.display = 'block';
+      watchBtn.style.display = 'none';
+      stopStreamBtn.style.display = 'inline-block';
+      setDot('videoDot', 'videoStatus', 'Streaming', '#3fb950');
+      streamInterval = setInterval(() => { img.src = '/frame?t=' + Date.now(); }, 80);
+      log('info', 'VIDEO', 'stream opened in the browser');
+    });
+
+    stopStreamBtn.addEventListener('click', () => {
+      clearInterval(streamInterval);
+      streamInterval = null;
+      img.style.display = 'none';
+      placeholder.style.display = 'flex';
+      stopStreamBtn.style.display = 'none';
+      watchBtn.style.display = 'inline-block';
+      setDot('videoDot', 'videoStatus', 'Disconnected', '#e5484d');
+      log('info', 'VIDEO', 'stream closed in the browser');
+    });
+
+    // ══════════════ SPEECH TO TEXT ══════════════
+    const SEGMENT_MS = 4000;   // each ~4s of speech is transcribed and shown as soon as it is ready
+    const STT_EMPTY = '<div class="chat-empty">Press Start and begin speaking — text appears as you talk...</div>';
+
+    let micStream = null;
+    let mediaRecorder = null;
+    let segmentTimer = null;
+    let running = false;
+    let pending = 0;                   // segments still being transcribed
+    let queue = Promise.resolve();     // keeps segments in order
+    let liveBody = null;               // the bubble the current session writes into
+    let segmentNo = 0;
+
+    const sttLog = $('sttLog');
+    const startBtn = $('startBtn');
+    const stopBtn = $('stopBtn');
+    const useTextBtn = $('useTextBtn');
+
+    function setStt(state) {
+      const map = {
+        ready:        ['Ready',           '#888888', false],
+        recording:    ['Recording...',    '#e5484d', true],
+        transcribing: ['Transcribing...', '#f5c518', false],
+        done:         ['Done',            '#3fb950', false],
+      };
+      const s = map[state] || map.ready;
+      setDot('sttDot', 'sttStatus', s[0], s[1], s[2]);
+    }
+    setStt('ready');
+
+    function appendLive(text) {
+      if (liveBody) {
+        liveBody.textContent += ' ' + text;
+        sttLog.scrollTop = sttLog.scrollHeight;
+      } else {
+        liveBody = addBubble(sttLog, text);
+      }
+      useTextBtn.disabled = false;
+    }
+
+    async function transcribeSegment(blob, n) {
+      const formData = new FormData();
+      formData.append('audio', blob, 'segment.webm');
+      const started = performance.now();
+      log('send', 'STT', `segment #${n}: uploading ${(blob.size / 1024).toFixed(1)} KB, waiting for Whisper...`);
+      try {
+        const res = await fetch('/transcribe', { method: 'POST', body: formData });
+        const data = await res.json();
+        const secs = ((performance.now() - started) / 1000).toFixed(1);
+        if (data.transcript && data.transcript.trim() !== '') {
+          appendLive(data.transcript.trim());
+          log('text', 'STT', `segment #${n} (${secs}s): "${data.transcript.trim()}"`);
+        } else if (data.error) {
+          addBubble(sttLog, '[Error: ' + data.error + ']');
+          log('error', 'STT', `segment #${n}: ${data.error}`);
+        } else {
+          log('info', 'STT', `segment #${n} (${secs}s): no speech detected`);
+        }
+      } catch (err) {
+        addBubble(sttLog, '[Network error: ' + err.message + ']');
+        log('error', 'STT', `segment #${n}: network error: ${err.message}`);
+      }
+    }
+
+    function enqueue(blob) {
+      const n = ++segmentNo;
+      pending++;
+      log('rec', 'STT', `segment #${n} recorded (${(blob.size / 1024).toFixed(1)} KB), queued (${pending} pending)`);
+      queue = queue.then(() => transcribeSegment(blob, n)).finally(() => {
+        pending--;
+        if (!running && pending === 0) finishSession();
+      });
+    }
+
+    function finishSession() {
+      log('info', 'STT', 'all segments transcribed');
+      setStt('done');
+      setTimeout(() => { if (!running) setStt('ready'); }, 2000);
+      startBtn.disabled = false;
+    }
+
+    // A fresh MediaRecorder per segment, so every blob is a complete, decodable file.
+    function startSegment() {
+      const chunks = [];
+      const recorder = new MediaRecorder(micStream);
+      mediaRecorder = recorder;
+
+      recorder.ondataavailable = (e) => { if (e.data.size > 0) chunks.push(e.data); };
+      recorder.onstop = () => {
+        if (chunks.length) enqueue(new Blob(chunks, { type: recorder.mimeType || 'audio/webm' }));
+        if (running) {
+          startSegment();
+        } else {
+          micStream.getTracks().forEach((t) => t.stop());
+          if (pending === 0) finishSession(); else setStt('transcribing');
+        }
+      };
+
+      recorder.start();
+      segmentTimer = setTimeout(() => {
+        if (recorder.state === 'recording') recorder.stop();
+      }, SEGMENT_MS);
+    }
+
+    startBtn.addEventListener('click', async () => {
+      try {
+        micStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        running = true;
+        liveBody = null;
+        segmentNo = 0;
+        log('info', 'STT', 'microphone opened, recording in ' + (SEGMENT_MS / 1000) + 's segments');
+        startBtn.disabled = true;
+        stopBtn.disabled = false;
+        setStt('recording');
+        startSegment();
+      } catch (err) {
+        addBubble(sttLog, '[Microphone error: ' + err.message + ']');
+        log('error', 'STT', 'microphone: ' + err.message);
+      }
+    });
+
+    stopBtn.addEventListener('click', () => {
+      stopBtn.disabled = true;
+      running = false;
+      log('info', 'STT', 'stopping, flushing the last segment');
+      clearTimeout(segmentTimer);
+      if (mediaRecorder && mediaRecorder.state === 'recording') mediaRecorder.stop();
+    });
+
+    $('sttClearBtn').addEventListener('click', () => {
+      sttLog.innerHTML = STT_EMPTY;
+      liveBody = null;
+      useTextBtn.disabled = true;
+      if (!running) setStt('ready');
+    });
+
+    // ══════════════ TEXT TO SPEECH ══════════════
+    const voiceSelect = $('voiceSelect');
+    const ttsInput = $('ttsInput');
+    const speakBtn = $('speakBtn');
+    const replayBtn = $('replayBtn');
+    const stopSpeakBtn = $('stopSpeakBtn');
+    let currentAudio = null;
+
+    async function loadVoices() {
+      try {
+        const res = await fetch('/voices');
+        (await res.json()).forEach((v) => {
+          const opt = document.createElement('option');
+          opt.value = v.id;
+          opt.textContent = v.label;
+          voiceSelect.appendChild(opt);
+        });
+      } catch (err) {
+        log('error', 'TTS', 'could not load voices: ' + err.message);
+      }
+    }
+    loadVoices();
+    setDot('ttsDot', 'ttsStatus', 'Ready', '#888888');
+
+    function play() {
+      stopPlayback();
+      const audio = new Audio('/audio?t=' + Date.now());   // cache buster
+      currentAudio = audio;
+      audio.onended = () => {
+        setDot('ttsDot', 'ttsStatus', 'Ready', '#888888');
+        stopSpeakBtn.disabled = true;
+      };
+      audio.onerror = () => {
+        setDot('ttsDot', 'ttsStatus', 'Error', '#e5484d');
+        stopSpeakBtn.disabled = true;
+        log('error', 'TTS', 'could not play audio');
+      };
+      setDot('ttsDot', 'ttsStatus', 'Playing...', '#3fb950', true);
+      stopSpeakBtn.disabled = false;
+      audio.play().catch((err) => {
+        setDot('ttsDot', 'ttsStatus', 'Error', '#e5484d');
+        stopSpeakBtn.disabled = true;
+        log('error', 'TTS', 'playback blocked: ' + err.message + ' (use Replay)');
+      });
+    }
+
+    function stopPlayback() {
+      if (currentAudio) {
+        currentAudio.onended = currentAudio.onerror = null;
+        currentAudio.pause();
+        currentAudio = null;
+      }
+    }
+
+    // Speak: synthesize on the server, then play the result
+    speakBtn.addEventListener('click', async () => {
+      const text = ttsInput.value.trim();
+      if (!text) return;
+
+      stopPlayback();
+      speakBtn.disabled = true;       // one synthesis at a time
+      replayBtn.disabled = true;
+      stopSpeakBtn.disabled = true;
+      setDot('ttsDot', 'ttsStatus', 'Generating...', '#f5c518', true);
+
+      try {
+        const res = await fetch('/synthesize', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ text, voice_id: voiceSelect.value }),
+        });
+        const data = await res.json();
+        if (data.status === 'ok') {
+          replayBtn.disabled = false;
+          play();
+        } else {
+          setDot('ttsDot', 'ttsStatus', 'Error', '#e5484d');
+          log('error', 'TTS', data.error || 'unknown error');
+        }
+      } catch (err) {
+        setDot('ttsDot', 'ttsStatus', 'Error', '#e5484d');
+        log('error', 'TTS', 'network error: ' + err.message);
+      }
+
+      speakBtn.disabled = false;
+      fetchLogs();
+    });
+
+    replayBtn.addEventListener('click', play);
+
+    stopSpeakBtn.addEventListener('click', () => {
+      stopPlayback();
+      stopSpeakBtn.disabled = true;
+      setDot('ttsDot', 'ttsStatus', 'Stopped', '#888888');
+      log('info', 'TTS', 'playback stopped');
+    });
+
+    ttsInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) speakBtn.click();
+    });
+
+    // Copy the current transcript into the speech box
+    useTextBtn.addEventListener('click', () => {
+      if (liveBody) {
+        ttsInput.value = liveBody.textContent;
+        log('info', 'TTS', 'transcript copied to the speech box');
+      }
+    });
+
+    log('info', 'PAGE', 'dashboard loaded');
+  </script>
+</body>
+</html>
