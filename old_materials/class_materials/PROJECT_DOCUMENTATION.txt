@@ -1,0 +1,608 @@
+================================================================================
+          MCP PRACTICE PROJECT - MODE-AWARE ASSISTANT SYSTEM
+================================================================================
+
+PROJECT OVERVIEW
+================================================================================
+This project implements a Model Context Protocol (MCP) server with an LLM-powered
+client that features dynamic personality modes. The assistant can switch between
+different personalities while maintaining full MCP functionality.
+
+Technologies Used:
+- Python 3.x
+- Google Gemini API (gemini-2.5-flash)
+- OpenAI API (DALL-E for image generation)
+- MCP (Model Context Protocol) - FastMCP
+- PySerial (for Arduino communication)
+
+
+================================================================================
+AVAILABLE PERSONALITY MODES
+================================================================================
+
+1. NORMAL
+   - Neutral and helpful assistant (default mode)
+   
+2. SANTA
+   - Warm, cheerful Santa Claus with festive expressions
+   - Uses "Ho ho ho!", references Christmas, North Pole, elves, reindeer
+   
+3. ENGINEER
+   - Precise, technical senior software engineer
+   - Detail-oriented, focuses on architecture and best practices
+   
+4. TEACHER
+   - Patient, encouraging educator
+   - Explains step-by-step, uses analogies, checks for understanding
+   
+5. PIRATE
+   - Friendly pirate with adventurous spirit
+   - Uses pirate slang (ahoy, matey, arr), references sea and treasure
+
+
+================================================================================
+MCP SERVER CAPABILITIES
+================================================================================
+
+TOOLS (Functions the assistant can call):
+------------------------------------------
+1. add(a: int, b: int)
+   - Adds two numbers together
+   
+2. control_light(state: str)
+   - Controls Arduino light ('on' or 'off')
+   - Sends commands via serial port (COM3, 9600 baud)
+   
+3. create_image(prompt: str)
+   - Generates images using OpenAI DALL-E 2
+   - Returns markdown link to generated image
+
+RESOURCES (Read-only data sources):
+------------------------------------
+1. greeting://{name}
+   - Returns personalized greeting for given name
+   - Example: greeting://Alice -> "Hello, Alice!"
+   
+2. light://state
+   - Returns current light state (on/off)
+
+PROMPTS (Template generators):
+-------------------------------
+1. check_fact(sentence: str)
+   - Generates fact-checking prompt template
+   - Mode-aware (adapts to current personality)
+
+
+================================================================================
+FILES STRUCTURE
+================================================================================
+
+Core Files:
+-----------
+mode_manager.py         - Central personality mode management system
+server.py              - MCP server with tools, resources, prompts
+llm_wrapper.py         - LLM wrapper with text-based command parsing
+llm_wrapper_v2.py      - LLM wrapper with JSON-based routing (improved)
+llm_client.py          - Interactive CLI using llm_wrapper.py
+llm_client_v2.py       - Interactive CLI using llm_wrapper_v2.py
+
+Configuration:
+--------------
+requirements.txt       - Python dependencies
+command.txt            - Setup commands and API keys
+
+Utility Files:
+--------------
+check_error.py         - Prints ClientSession attributes
+check_mcp.py           - Detailed MCP ClientSession method inspection
+check_models.py        - Lists available Gemini models
+openAI_model_list.py   - Lists available OpenAI image models
+generate_image.py      - Standalone DALL-E image generation
+inspect_server.py      - Inspects MCP server capabilities
+client.py              - Basic MCP client demo
+
+
+================================================================================
+KEY IMPLEMENTATION: MODE MANAGER
+================================================================================
+
+File: mode_manager.py
+
+Functions:
+----------
+get_mode() -> str
+    Returns the currently active mode name
+
+set_mode(mode_name: str) -> bool
+    Sets the active mode, returns True if successful
+
+get_mode_context() -> str
+    Returns personality description for current mode
+    This is injected into every LLM prompt
+
+list_available_modes() -> list
+    Returns list of all available mode names
+
+get_mode_description(mode_name: str) -> str
+    Returns description for a specific mode
+
+Architecture:
+-------------
+- Uses global variable _active_mode to store current state
+- Default mode is "normal"
+- Mode definitions stored in MODES dictionary
+- Case-insensitive mode switching
+- Automatic whitespace trimming
+
+
+================================================================================
+HOW MODE SWITCHING WORKS
+================================================================================
+
+CLIENT-SIDE IMPLEMENTATION (Critical Fix):
+-------------------------------------------
+Mode management happens on the CLIENT side (llm_wrapper.py), not the server!
+
+Why?
+- Client and server run in SEPARATE processes
+- Each has its own copy of mode_manager with separate state
+- If server updates mode, client still reads old value
+- Solution: Client updates its own mode_manager directly
+
+Implementation in llm_wrapper.py:
+----------------------------------
+When LLM decides to switch modes:
+1. LLM returns: "CALL set_mode mode=santa"
+2. llm_wrapper.py intercepts this
+3. Calls: mode_manager.set_mode("santa") LOCALLY
+4. Returns confirmation to user
+5. Next prompt automatically uses new personality
+
+Flow:
+-----
+User: "Switch to santa mode"
+  -> LLM decides: CALL set_mode mode=santa
+  -> Client updates local mode_manager
+  -> Client confirms: "Mode switched to 'SANTA'..."
+  
+User: "Hello"
+  -> Client reads mode_manager.get_mode() = "santa"
+  -> Injects Santa personality into prompt
+  -> LLM responds as Santa: "Ho ho ho! Merry Christmas!"
+
+
+================================================================================
+PROMPT STRUCTURE (HOW PERSONALITY IS INJECTED)
+================================================================================
+
+Every LLM request follows this structure:
+
+=== YOUR PERSONALITY (ALWAYS MAINTAIN THIS) ===
+[Mode personality description from mode_manager]
+=== END PERSONALITY ===
+
+You are connected to an MCP server.
+
+The available capabilities are:
+[List of tools, resources, prompts...]
+
+Response rules:
+- For math: CALL add a=X b=Y
+- For images: CALL create_image prompt=...
+- For mode switching: CALL set_mode mode=...
+- Otherwise: NO TOOL NEEDED <reply IN CHARACTER>
+
+IMPORTANT: When giving direct responses, you MUST stay fully in character
+according to your personality context at the top. This is critical!
+
+USER: [user input]
+
+Key Design Decisions:
+---------------------
+1. Personality section has visual markers (===) to stand out
+2. Explicit "ALWAYS MAINTAIN THIS" directive
+3. Repeated reminder to stay "IN CHARACTER"
+4. Multiple reinforcement points throughout prompt
+5. Personality context fetched fresh on every request
+
+
+================================================================================
+USAGE EXAMPLES
+================================================================================
+
+Starting the System:
+--------------------
+python llm_client.py
+(or)
+python llm_client_v2.py
+
+Example Session 1 - Santa Mode:
+--------------------------------
+You: Change to santa mode
+Bot: Mode switched to 'SANTA'. All future interactions will use this personality.
+
+You: Hello
+Bot: Ho ho ho! Merry Christmas, my dear friend! How are you doing today?
+
+You: Add 5 and 3
+Bot: Ho ho ho! The result is 8, wonderful!
+
+You: Create an image of a snowman
+Bot: Ho ho ho! I'll create a magical snowman for you!
+     [Link to your image created using OpenAI](https://...)
+
+Example Session 2 - Engineer Mode:
+-----------------------------------
+You: Switch to engineer mode
+Bot: Mode switched to 'ENGINEER'. All future interactions will use this personality.
+
+You: Hello
+Bot: Greetings. I'm ready to assist with technical analysis. What's the requirement?
+
+You: Add 5 and 3
+Bot: The operation completed successfully. Result: 8. Time complexity: O(1).
+
+Example Session 3 - Pirate Mode:
+---------------------------------
+You: Change mode to pirate
+Bot: Mode switched to 'PIRATE'. All future interactions will use this personality.
+
+You: Hello
+Bot: Ahoy, matey! Welcome aboard! What can this old sea dog help ye with today?
+
+You: What's the light state?
+Bot: Arr! Let me check the lantern for ye...
+     The current light state is OFF.
+
+
+================================================================================
+ADDING NEW MODES
+================================================================================
+
+To add a new personality mode:
+
+1. Open mode_manager.py
+
+2. Add entry to MODES dictionary:
+
+MODES = {
+    "normal": "You are a neutral and helpful assistant.",
+    "santa": "...",
+    # Add your new mode here:
+    "wizard": (
+        "You are Gandalf the Wise - mysterious, powerful, and ancient. "
+        "You speak with wisdom and occasionally use magical references."
+    ),
+}
+
+3. Save the file - new mode is immediately available!
+
+4. Test it:
+   You: Switch to wizard mode
+   Bot: Mode switched to 'WIZARD'...
+   
+   You: Hello
+   Bot: Greetings, traveler. What wisdom do you seek?
+
+
+================================================================================
+CRITICAL BUGS FIXED DURING DEVELOPMENT
+================================================================================
+
+Bug #1: Weak Personality Expression
+------------------------------------
+Problem:
+- Personality was being diluted by technical MCP instructions
+- LLM saw 2 lines of personality + 20 lines of technical details
+- Result: Weak character portrayal
+
+Solution:
+- Added visual markers: === YOUR PERSONALITY (ALWAYS MAINTAIN THIS) ===
+- Added explicit in-character reminders throughout prompt
+- Changed "your direct reply" to "your direct reply IN CHARACTER"
+- Multiple reinforcement points
+
+Bug #2: Mode Not Persisting (Critical)
+---------------------------------------
+Problem:
+- User switches to Santa mode
+- Server confirms: "Mode switched to 'SANTA'"
+- Next message still uses Normal personality
+- Debug showed: mode = "normal" after switching to "santa"
+
+Root Cause:
+- Client and server are SEPARATE PROCESSES
+- Each has its own mode_manager with separate state
+- set_mode called on SERVER's mode_manager
+- LLM prompts read from CLIENT's mode_manager
+- They don't share state!
+
+Solution:
+- Moved mode management to CLIENT-SIDE
+- llm_wrapper.py now updates its own mode_manager locally
+- No more MCP tool calls for mode switching
+- Client reads and writes to same mode_manager instance
+- State consistency maintained!
+
+Before Fix:
+-----------
+User: "Switch to santa"
+  -> Client calls server's set_mode tool
+  -> Server's mode_manager = "santa"
+  -> Client's mode_manager = "normal" (unchanged!)
+  -> Next prompt uses "normal" personality
+
+After Fix:
+----------
+User: "Switch to santa"
+  -> Client updates own mode_manager = "santa"
+  -> Next prompt reads same mode_manager = "santa"
+  -> Correct personality used!
+
+
+================================================================================
+ARCHITECTURE DIAGRAM
+================================================================================
+
+CLIENT PROCESS (llm_client.py):
++---------------------------------------------------------------+
+|  llm_wrapper.py                                              |
+|    |                                                          |
+|    +-- handle(user_input)                                    |
+|         |                                                     |
+|         +-- mode_context = mode_manager.get_mode_context()   |
+|         |                                                     |
+|         +-- Build dynamic prompt with personality            |
+|         |                                                     |
+|         +-- Send to Gemini LLM                               |
+|         |                                                     |
+|         +-- Parse LLM decision                               |
+|         |                                                     |
+|         +-- Execute action:                                  |
+|             - CALL set_mode -> Update local mode_manager     |
+|             - CALL add -> Call MCP server tool               |
+|             - CALL create_image -> Call MCP server tool      |
+|             - NO TOOL NEEDED -> Return direct response       |
+|                                                              |
+|  mode_manager.py (CLIENT COPY)                               |
+|    - _active_mode = "santa" (or current mode)                |
+|    - Single source of truth for client!                      |
++---------------------------------------------------------------+
+                            |
+                            | MCP Protocol (stdio)
+                            v
++---------------------------------------------------------------+
+|  SERVER PROCESS (server.py):                                 |
+|                                                              |
+|  MCP Tools:                                                  |
+|    - add(a, b) -> Returns sum                                |
+|    - control_light(state) -> Controls Arduino via serial     |
+|    - create_image(prompt) -> Calls OpenAI DALL-E             |
+|                                                              |
+|  MCP Resources:                                              |
+|    - greeting://{name} -> Returns greeting                   |
+|    - light://state -> Returns light status                   |
+|                                                              |
+|  MCP Prompts:                                                |
+|    - check_fact(sentence) -> Fact-checking template          |
+|                                                              |
+|  Note: Server's mode_manager no longer used by client!       |
++---------------------------------------------------------------+
+
+
+================================================================================
+API KEYS REQUIRED
+================================================================================
+
+1. Google Gemini API Key
+   - Used in: llm_wrapper.py, llm_wrapper_v2.py, check_models.py
+   - Format: AIzaSy...
+   - Get from: https://makersuite.google.com/app/apikey
+
+2. OpenAI API Key
+   - Used in: server.py, generate_image.py, openAI_model_list.py
+   - Format: sk-proj-...
+   - Get from: https://platform.openai.com/api-keys
+
+
+================================================================================
+DEPENDENCIES (requirements.txt)
+================================================================================
+
+mcp                     # Model Context Protocol (FastMCP)
+google-generativeai     # Google Gemini LLM
+openai                  # OpenAI API for DALL-E
+pyserial                # Arduino serial communication
+
+
+================================================================================
+SETUP INSTRUCTIONS
+================================================================================
+
+1. Create virtual environment:
+   python -m venv mcp_prac
+
+2. Activate virtual environment:
+   Windows: mcp_prac\Scripts\activate
+   Linux/Mac: source mcp_prac/bin/activate
+
+3. Install dependencies:
+   pip install -r requirements.txt
+
+4. Configure API keys:
+   - Add your Google Gemini API key to llm_wrapper.py
+   - Add your OpenAI API key to server.py
+
+5. Run the system:
+   python llm_client.py
+   (or python llm_client_v2.py for JSON-based routing)
+
+
+================================================================================
+DEVELOPMENT NOTES
+================================================================================
+
+Version Comparison:
+-------------------
+llm_wrapper.py (v1):
+- Text-based command parsing
+- Uses regex and string splitting
+- Simpler implementation
+- Currently used version with mode system
+
+llm_wrapper_v2.py (v2):
+- JSON-based routing
+- More robust parsing
+- Better structured
+- Also has mode system but less tested
+
+Both versions support:
+- Mode switching
+- All MCP tools
+- Dynamic personality injection
+
+Arduino Integration:
+--------------------
+- COM port: COM3
+- Baud rate: 9600
+- Fallback: If serial port unavailable, uses dummy serial class
+- Commands: "on\n" or "off\n"
+
+Image Generation:
+-----------------
+- Model: DALL-E 2 (can switch to DALL-E 3)
+- Size: 1024x1024
+- Returns: Markdown link to generated image
+- Error handling: Full traceback on failure
+
+
+================================================================================
+TESTING RECOMMENDATIONS
+================================================================================
+
+Test Mode Switching:
+--------------------
+1. Start in normal mode
+2. Switch to each personality mode
+3. Verify personality consistency across multiple messages
+4. Test mode persistence (should stay in mode)
+
+Test MCP Tools:
+---------------
+1. Math: "Add 5 and 3"
+2. Light control: "Turn the light on" / "Turn the light off"
+3. Images: "Create an image of a sunset"
+4. Resources: "Greet Bob" / "What's the light state?"
+5. Prompts: "Check if the sky is blue"
+
+Test Mode + Tools:
+------------------
+1. Switch to Santa mode
+2. Use tools (add, images) - should respond as Santa
+3. Switch to Engineer mode
+4. Use same tools - should respond as Engineer
+
+Edge Cases:
+-----------
+1. Invalid mode names: "Switch to wizard mode" (if not defined)
+2. Rapid mode switching
+3. Empty user input
+4. Very long prompts
+
+
+================================================================================
+FUTURE ENHANCEMENT IDEAS
+================================================================================
+
+1. Persistent Mode Storage
+   - Save mode to file/database
+   - Restore mode on restart
+
+2. User-Specific Modes
+   - Different users have different default modes
+   - Multi-user session management
+
+3. Custom Mode Creation
+   - Allow users to define custom personalities on-the-fly
+   - Save custom modes
+
+4. Mode History
+   - Track mode switches
+   - Analytics on mode usage
+
+5. Conditional Mode Switching
+   - Auto-switch based on context
+   - Time-based modes (e.g., Santa in December)
+
+6. Mode Blending
+   - Combine multiple personalities
+   - Weighted personality mixing
+
+
+================================================================================
+TROUBLESHOOTING
+================================================================================
+
+Mode not switching?
+-------------------
+- Verify you're using llm_client.py (not directly calling server)
+- Check that mode_manager.py is in same directory
+- Restart the client if mode seems stuck
+
+Personality weak?
+-----------------
+- This is normal for subtle personalities
+- Consider strengthening mode descriptions in mode_manager.py
+- Add more specific phrases and examples
+
+Arduino not responding?
+-----------------------
+- Check COM port (default: COM3)
+- Verify baud rate (default: 9600)
+- System falls back to dummy serial if port unavailable
+
+Image generation fails?
+-----------------------
+- Verify OpenAI API key is valid
+- Check API quota/credits
+- Try DALL-E 2 instead of DALL-E 3
+- Check error traceback for details
+
+
+================================================================================
+PROJECT SUMMARY
+================================================================================
+
+Successfully Implemented:
+-------------------------
+✓ MCP server with 3 tools, 2 resources, 1 prompt
+✓ Mode manager with 5 personality modes
+✓ Client-side mode management (critical fix)
+✓ Dynamic personality injection into all LLM prompts
+✓ Mode persistence across conversation
+✓ Visual prompt structure for strong personality
+✓ Clean, production-ready code
+✓ No debug output in final version
+
+Key Learning:
+-------------
+- State management in multi-process systems requires careful planning
+- LLM prompt engineering requires multiple reinforcement points
+- Visual structure in prompts helps LLM attention
+- Client-side state for client-side decisions
+
+Status:
+-------
+PRODUCTION READY ✓
+
+The system successfully combines MCP protocol capabilities with dynamic
+personality modes, allowing for flexible, character-driven interactions
+while maintaining full tool functionality.
+
+
+================================================================================
+END OF DOCUMENTATION
+================================================================================
+Created: 2025
+Last Updated: After mode persistence bug fix
+

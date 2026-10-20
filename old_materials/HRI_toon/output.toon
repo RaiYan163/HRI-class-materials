@@ -1,0 +1,21 @@
+employees[20]{id,firstName,lastName,email,department,position,salary,yearsOfExperience,isActive,hireDate,phoneNumber}:
+  1,Alice,Johnson,alice.j@company.com,Engineering,Senior Developer,95000,8,true,2018-03-15,+1-555-0101
+  2,Bob,Smith,bob.s@company.com,Engineering,Junior Developer,65000,2,true,2022-06-20,+1-555-0102
+  3,Carol,Williams,carol.w@company.com,Engineering,Tech Lead,120000,12,true,2015-01-10,+1-555-0103
+  4,David,Brown,david.b@company.com,Sales,Sales Manager,85000,6,true,2019-08-05,+1-555-0104
+  5,Eve,Davis,eve.d@company.com,Sales,Sales Representative,55000,3,true,2021-11-12,+1-555-0105
+  6,Frank,Miller,frank.m@company.com,Marketing,Marketing Director,100000,10,true,2016-04-22,+1-555-0106
+  7,Grace,Wilson,grace.w@company.com,Marketing,Content Writer,60000,4,true,2020-09-18,+1-555-0107
+  8,Henry,Moore,henry.m@company.com,Engineering,DevOps Engineer,90000,7,false,2017-12-03,+1-555-0108
+  9,Iris,Taylor,iris.t@company.com,HR,HR Manager,75000,9,true,2016-07-14,+1-555-0109
+  10,Jack,Anderson,jack.a@company.com,Sales,Sales Representative,52000,1,true,2023-02-28,+1-555-0110
+  11,Kate,Thomas,kate.t@company.com,Engineering,QA Engineer,70000,5,true,2020-05-07,+1-555-0111
+  12,Leo,Jackson,leo.j@company.com,Marketing,Social Media Manager,62000,3,true,2021-10-19,+1-555-0112
+  13,Mia,White,mia.w@company.com,Engineering,Senior Developer,98000,9,true,2017-03-25,+1-555-0113
+  14,Noah,Harris,noah.h@company.com,Sales,Sales Director,110000,11,true,2014-09-30,+1-555-0114
+  15,Olivia,Martin,olivia.m@company.com,HR,Recruiter,58000,4,true,2020-12-11,+1-555-0115
+  16,Paul,Thompson,paul.t@company.com,Engineering,Junior Developer,63000,1,true,2023-04-05,+1-555-0116
+  17,Quinn,Garcia,quinn.g@company.com,Marketing,Marketing Coordinator,55000,2,true,2022-08-16,+1-555-0117
+  18,Rachel,Martinez,rachel.m@company.com,Sales,Sales Representative,54000,2,true,2022-01-23,+1-555-0118
+  19,Sam,Robinson,sam.r@company.com,Engineering,Senior Developer,96000,8,true,2018-11-08,+1-555-0119
+  20,Tina,Clark,tina.c@company.com,HR,HR Coordinator,50000,2,true,2022-03-14,+1-555-0120

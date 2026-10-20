@@ -1,0 +1,7 @@
+{
+  "type": "module",
+  "dependencies": {
+    "@toon-format/toon": "^1.4.0",
+    "ollama": "^0.6.3"
+  }
+}

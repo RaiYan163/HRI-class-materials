@@ -1,0 +1,12 @@
+# MCP (Model Context Protocol) - includes both server (fastmcp) and client functionality
+mcp
+
+# Google Gemini API for LLM functionality
+google-generativeai
+
+# OpenAI API for image generation (DALL-E)
+openai
+
+# Serial communication for Arduino
+pyserial
+

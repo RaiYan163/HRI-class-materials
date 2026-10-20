@@ -24,3 +24,8 @@ venv/
 
 # Node
 node_modules/
+
+# Secrets
+.env
+old_materials/**/*.zip
+old_materials/**/*.pt

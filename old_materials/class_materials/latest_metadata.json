@@ -1,0 +1,26 @@
+{
+  "timestamp": 1763569195.168967,
+  "datetime": "2025-11-19T11:19:55.168968",
+  "frame_number": 3495,
+  "objects": [
+    {
+      "class": "person",
+      "confidence": 0.838,
+      "bbox": [
+        122,
+        194,
+        569,
+        479
+      ]
+    }
+  ],
+  "summary": {
+    "total_objects": 1,
+    "class_counts": {
+      "person": 1
+    },
+    "unique_classes": [
+      "person"
+    ]
+  }
+}

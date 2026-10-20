@@ -16,3 +16,6 @@ User asked (2026-10-19) that Claude keep track of all git work for this repo (`R
 
 ## Log
 - 2026-10-19: Baseline. One commit (`1a7dde9 Initial commit`), `main` in sync with `origin/main`. Untracked: `.DS_Store`, `intro_claude_code/` (contains `HRI_claudeUse_demo_previous`, `HRI_claude_code.pptx`, `experiment`).
+- 2026-10-19: Committed and pushed `48ab312` to origin/main (added intro_claude_code/, .gitignore, .claude/memory/; node_modules ignored). Branch in sync.
+- 2026-10-19: Amended 48ab312 to remove Claude co-author trailer; force-pushed (with lease) as `62783f8`. Author is RaiYan163 only.
+- 2026-10-20: Committed and pushed old_materials/ (keys moved to .env, READMEs added for class_materials and HRI_toon); .gitignore updated for .env, zips, .pt. Author RaiYan163 only.
