@@ -12,3 +12,8 @@ faster-whisper==1.1.1
 
 # faster-whisper 1.1.1 calls av.open(metadata_errors=...), which newer PyAV (19.0.1 tested) rejects
 av==16.1.0
+
+# Text-to-speech
+# 1.2.0 can't be installed on Python 3.13 (its piper-phonemize dependency has no build for it)
+# and has a different API; this server_tts.py uses the 1.3+ API (PiperVoice.synthesize_wav)
+piper-tts==1.3.0

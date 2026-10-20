@@ -1,0 +1,543 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Text to Speech — ATR Lab</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500&family=Orbitron:wght@500;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #2b1e3e;
+      --surface: #1a1228;
+      --accent: #4a4e8f;
+      --accent-hover: #5a5eaf;
+      --lavender: #a490c2;
+      --silver: #e6e6fa;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      background: var(--bg);
+      color: var(--silver);
+      font-family: 'Inter', sans-serif;
+    }
+
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 14px 28px;
+      background: var(--surface);
+      border-bottom: 1px solid var(--accent);
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-family: 'Orbitron', sans-serif;
+      font-size: 0.95rem;
+      letter-spacing: 0.04em;
+    }
+
+    .glow-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: radial-gradient(circle, #e6e6fa 0%, var(--lavender) 55%, transparent 100%);
+      animation: pulse 2s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { box-shadow: 0 0 4px 1px #a490c244; transform: scale(1); }
+      50% { box-shadow: 0 0 14px 5px #a490c288; transform: scale(1.2); }
+    }
+
+    #clock {
+      font-family: 'Orbitron', sans-serif;
+      color: var(--lavender);
+      font-size: 0.95rem;
+    }
+
+    .hero { text-align: center; padding: 36px 20px 8px; }
+
+    .hero h1 {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 2.6rem;
+      font-weight: 700;
+      color: var(--silver);
+    }
+
+    .hero p {
+      margin-top: 10px;
+      color: var(--lavender);
+      font-size: 1rem;
+    }
+
+    .dashboard {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      padding: 24px;
+      flex: 1;
+      width: 100%;
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+
+    .top-row {
+      display: grid;
+      grid-template-columns: 340px 1fr;
+      gap: 20px;
+    }
+
+    @media (max-width: 800px) {
+      .top-row { grid-template-columns: 1fr; }
+    }
+
+    .panel {
+      background: var(--surface);
+      border-radius: 16px;
+      border: 1px solid #4a4e8f44;
+      padding: 20px;
+    }
+
+    .panel-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-family: 'Orbitron', sans-serif;
+      font-size: 0.85rem;
+      color: var(--lavender);
+      letter-spacing: 0.06em;
+      margin-bottom: 12px;
+      border-bottom: 1px solid #4a4e8f44;
+      padding-bottom: 10px;
+    }
+
+    /* ── Controls panel ───────────────────────────── */
+    .controls-panel { display: flex; flex-direction: column; gap: 14px; }
+
+    label {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 0.75rem;
+      color: var(--lavender);
+      letter-spacing: 0.06em;
+    }
+
+    select, textarea {
+      width: 100%;
+      background: #2b1e3e;
+      color: var(--silver);
+      border: 1px solid #4a4e8f66;
+      border-radius: 8px;
+      padding: 10px 14px;
+      font-family: 'Inter', sans-serif;
+      font-size: 0.9rem;
+      outline: none;
+    }
+
+    select:focus, textarea:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 2px #4a4e8f33;
+    }
+
+    textarea { resize: vertical; }
+
+    .button-row { display: flex; gap: 12px; }
+
+    button {
+      flex: 1;
+      font-family: 'Orbitron', sans-serif;
+      font-size: 0.9rem;
+      color: var(--silver);
+      background: var(--accent);
+      border: 2px solid var(--accent);
+      border-radius: 8px;
+      padding: 12px 20px;
+      cursor: pointer;
+      transition: background 0.2s, box-shadow 0.2s;
+    }
+
+    button:hover:not(:disabled) {
+      background: var(--accent-hover);
+      border-color: var(--accent-hover);
+      box-shadow: 0 0 16px #a490c255;
+    }
+
+    button:disabled { opacity: 0.4; cursor: not-allowed; }
+
+    #convertBtn {
+      background: transparent;
+      border-color: var(--lavender);
+      color: var(--lavender);
+    }
+
+    #convertBtn:hover:not(:disabled) {
+      background: #a490c222;
+      border-color: var(--lavender);
+    }
+
+    .btn-clear {
+      flex: none;
+      background: transparent;
+      border-color: transparent;
+      color: var(--lavender);
+      opacity: 0.7;
+      padding: 4px 10px;
+      font-size: 0.7rem;
+    }
+
+    .btn-clear:hover:not(:disabled) {
+      background: transparent;
+      border-color: transparent;
+      box-shadow: none;
+      opacity: 1;
+    }
+
+    .status {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding-top: 14px;
+      border-top: 1px solid #4a4e8f66;
+      color: var(--lavender);
+      font-size: 0.85rem;
+    }
+
+    #statusDot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: #888888;
+    }
+
+    /* ── Chat log ─────────────────────────────────── */
+    .chat-log {
+      height: 260px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      padding: 16px;
+      background: #2b1e3e;
+      border: 1px solid #4a4e8f44;
+      border-radius: 12px;
+    }
+
+    .bubble {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      animation: fadeIn 0.3s ease;
+    }
+
+    .bubble-icon { font-size: 1.3rem; flex-shrink: 0; margin-top: 2px; }
+
+    .bubble-text {
+      background: #3a2a54;
+      color: var(--silver);
+      border-radius: 0 12px 12px 12px;
+      padding: 12px 16px;
+      font-size: 0.95rem;
+      line-height: 1.6;
+      max-width: 90%;
+      border: 1px solid #4a4e8f55;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(6px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .chat-empty {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--lavender);
+      opacity: 0.5;
+      font-style: italic;
+      font-size: 0.9rem;
+    }
+
+    /* ── Log panel ────────────────────────────────── */
+    .log-entries {
+      max-height: 160px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      font-size: 0.82rem;
+      font-family: 'Inter', monospace;
+    }
+
+    .log-entry {
+      display: flex;
+      gap: 10px;
+      align-items: baseline;
+      padding: 3px 0;
+      border-bottom: 1px solid #4a4e8f22;
+    }
+
+    .log-time { color: var(--lavender); opacity: 0.7; min-width: 60px; }
+
+    .log-badge {
+      font-size: 0.7rem;
+      padding: 1px 7px;
+      border-radius: 999px;
+      font-family: 'Orbitron', sans-serif;
+      min-width: 58px;
+      text-align: center;
+    }
+
+    .log-badge.info    { background: #4a4e8f33; color: var(--lavender); }
+    .log-badge.success { background: #1a3a2a;   color: #3fb950; }
+    .log-badge.error   { background: #3a1a1a;   color: #e5484d; }
+
+    .log-msg { color: var(--silver); opacity: 0.85; word-break: break-word; }
+
+    footer {
+      text-align: center;
+      padding: 18px;
+      color: var(--lavender);
+      font-size: 0.85rem;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="brand"><span class="glow-dot"></span>ATR Lab — Modality Experiment</div>
+    <div id="clock">--:--:--</div>
+  </header>
+
+  <section class="hero">
+    <h1>🔊 Text to Speech</h1>
+    <p>Local voice synthesis · Piper TTS</p>
+  </section>
+
+  <main class="dashboard">
+    <div class="top-row">
+
+      <!-- Controls -->
+      <section class="panel controls-panel">
+        <div>
+          <label for="voiceSelect">Voice:</label>
+          <select id="voiceSelect"></select>
+        </div>
+
+        <textarea id="textInput" rows="4" placeholder="Type something to speak..."></textarea>
+
+        <div class="button-row">
+          <button id="sendBtn">Send</button>
+          <button id="convertBtn" disabled>Convert</button>
+        </div>
+
+        <div class="status">
+          <span id="statusDot"></span>
+          <span id="statusText">Ready</span>
+        </div>
+      </section>
+
+      <!-- Chat log -->
+      <section class="panel">
+        <div class="panel-header">
+          <span>CHAT LOG</span>
+          <button id="clearBtn" class="btn-clear">Clear</button>
+        </div>
+        <div class="chat-log" id="chatLog">
+          <div class="chat-empty">Type something and hit Send...</div>
+        </div>
+      </section>
+    </div>
+
+    <!-- System log -->
+    <section class="panel log-panel">
+      <div class="panel-header"><span>LOG</span></div>
+      <div class="log-entries" id="logEntries"></div>
+    </section>
+  </main>
+
+  <footer>HRI Class Demo · Kent State University</footer>
+
+  <script>
+    const voiceSelect = document.getElementById('voiceSelect');
+    const textInput = document.getElementById('textInput');
+    const sendBtn = document.getElementById('sendBtn');
+    const convertBtn = document.getElementById('convertBtn');
+    const clearBtn = document.getElementById('clearBtn');
+    const chatLog = document.getElementById('chatLog');
+    const statusDot = document.getElementById('statusDot');
+    const statusText = document.getElementById('statusText');
+
+    const EMPTY_HTML = '<div class="chat-empty">Type something and hit Send...</div>';
+
+    // ── Status ─────────────────────────────────────────
+    function setStatus(state) {
+      const map = {
+        ready:        { text: 'Ready',         color: '#888888' },
+        synthesizing: { text: 'Generating...', color: '#f5c518' },
+        playing:      { text: 'Playing...',    color: '#3fb950' },
+        error:        { text: 'Error',         color: '#e5484d' },
+      };
+      const s = map[state] || map.ready;
+      statusDot.style.background = s.color;
+      statusText.textContent = s.text;
+    }
+
+    // ── Voices ─────────────────────────────────────────
+    async function loadVoices() {
+      try {
+        const res = await fetch('/voices');
+        const voices = await res.json();
+        voices.forEach(v => {
+          const opt = document.createElement('option');
+          opt.value = v.id;
+          opt.textContent = v.label;
+          voiceSelect.appendChild(opt);
+        });
+      } catch (err) {
+        addBubble('[Could not load voices: ' + err.message + ']');
+      }
+    }
+    loadVoices();
+
+    // ── Chat bubble ────────────────────────────────────
+    // textContent, not innerHTML: typed text and errors are never parsed as HTML
+    function addBubble(text) {
+      const empty = chatLog.querySelector('.chat-empty');
+      if (empty) empty.remove();
+
+      const bubble = document.createElement('div');
+      bubble.className = 'bubble';
+
+      const icon = document.createElement('span');
+      icon.className = 'bubble-icon';
+      icon.textContent = '💬';
+
+      const body = document.createElement('div');
+      body.className = 'bubble-text';
+      body.textContent = text;
+
+      bubble.append(icon, body);
+      chatLog.appendChild(bubble);
+      chatLog.scrollTop = chatLog.scrollHeight;
+    }
+
+    // ── Send: show bubble, synthesize in the background ─
+    sendBtn.addEventListener('click', async () => {
+      const text = textInput.value.trim();
+      const voiceId = voiceSelect.value;
+      if (!text) return;
+
+      addBubble(text);
+      textInput.value = '';
+      sendBtn.disabled = true;      // one synthesis at a time
+      convertBtn.disabled = true;
+      setStatus('synthesizing');
+
+      try {
+        const res = await fetch('/synthesize', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ text, voice_id: voiceId }),
+        });
+        const data = await res.json();
+
+        if (data.status === 'ok') {
+          convertBtn.disabled = false;
+          setStatus('ready');
+        } else {
+          setStatus('error');
+          addBubble('[Error: ' + (data.error || 'Unknown') + ']');
+        }
+      } catch (err) {
+        setStatus('error');
+        addBubble('[Network error: ' + err.message + ']');
+      }
+
+      sendBtn.disabled = false;
+      fetchLogs();
+    });
+
+    // Cmd/Ctrl + Enter also sends
+    textInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) sendBtn.click();
+    });
+
+    // ── Convert: play the last generated audio ─────────
+    convertBtn.addEventListener('click', () => {
+      const audio = new Audio('/audio?t=' + Date.now());   // cache buster
+      audio.onended = () => setStatus('ready');
+      audio.onerror = () => {
+        setStatus('error');
+        addBubble('[Could not play audio]');
+      };
+      setStatus('playing');
+      audio.play().catch(err => {
+        setStatus('error');
+        addBubble('[Playback blocked: ' + err.message + ']');
+      });
+    });
+
+    // ── Clear chat log ─────────────────────────────────
+    clearBtn.addEventListener('click', () => {
+      chatLog.innerHTML = EMPTY_HTML;
+    });
+
+    // ── System log: poll /logs every 2 seconds ─────────
+    async function fetchLogs() {
+      try {
+        const res = await fetch('/logs');
+        const entries = await res.json();
+        const container = document.getElementById('logEntries');
+        const prevTop = container.scrollTop;
+        const stick = prevTop + container.clientHeight >= container.scrollHeight - 8;
+        container.replaceChildren();
+        entries.slice(-30).forEach(e => {      // last 30 entries
+          const row = document.createElement('div');
+          row.className = 'log-entry';
+
+          const time = document.createElement('span');
+          time.className = 'log-time';
+          time.textContent = e.time;
+
+          const badge = document.createElement('span');
+          badge.className = 'log-badge ' + (['info', 'success', 'error'].includes(e.level) ? e.level : 'info');
+          badge.textContent = e.level;
+
+          const msg = document.createElement('span');
+          msg.className = 'log-msg';
+          msg.textContent = e.message;
+
+          row.append(time, badge, msg);
+          container.appendChild(row);
+        });
+        container.scrollTop = stick ? container.scrollHeight : prevTop;   // don't yank the view if the user scrolled up
+      } catch (err) {
+        // server briefly unreachable: keep the old log and try again next tick
+      }
+    }
+    fetchLogs();
+    setInterval(fetchLogs, 2000);
+
+    // ── Clock ──────────────────────────────────────────
+    function updateClock() {
+      const now = new Date();
+      const pad = n => String(n).padStart(2, '0');
+      document.getElementById('clock').textContent =
+        `${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`;
+    }
+    updateClock();
+    setInterval(updateClock, 1000);
+  </script>
+</body>
+</html>

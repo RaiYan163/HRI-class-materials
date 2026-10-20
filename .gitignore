@@ -33,3 +33,10 @@ old_materials/**/*.pt
 # Modality experiment temp frames
 modality_experiment/temp/frame.jpg
 modality_experiment/temp/frame.jpg.tmp
+
+# Piper voice model files
+modality_experiment/voices/*.onnx
+modality_experiment/voices/*.onnx.json
+modality_experiment/voices/*.part
+modality_experiment/temp/output.wav
+modality_experiment/temp/output.wav.tmp
