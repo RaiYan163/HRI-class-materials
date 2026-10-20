@@ -1,0 +1,8 @@
+# Web framework
+flask==3.0.3
+
+# Computer vision — camera capture and frame writing
+opencv-python==4.10.0.84
+
+# WSGI server (optional but recommended over Flask dev server for demos)
+waitress==3.0.0

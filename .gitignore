@@ -29,3 +29,7 @@ node_modules/
 .env
 old_materials/**/*.zip
 old_materials/**/*.pt
+
+# Modality experiment temp frames
+modality_experiment/temp/frame.jpg
+modality_experiment/temp/frame.jpg.tmp
