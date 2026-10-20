@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Dashboard</title><link rel="stylesheet" href="styles.css"></head>
+<body class="dash">
+<div class="topbar">
+  <div class="avatar"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21c1-5 4-7 8-7s7 2 8 7"/></svg></div>
+  <div class="who"><b>Rosy</b><small>Age: 28 • Theme: Previous Travelling Memory</small></div>
+  <div class="spacer"></div>
+  <div class="phase">Intro Phase - Step 3/3</div>
+  <div class="timer">00:04:48</div>
+  <button class="btn amber">⏸ Pause Conversation</button>
+  <button class="btn red">▢ End Session</button>
+</div>
+<div class="grid">
+  <section class="panel">
+    <div class="panel-h">Conversation Log <small>Live Transcript</small></div>
+    <div class="chat">
+      <div class="msg"><div class="ico">🤖</div><div class="b">Hi Rosy! I love your blue knit sweater; it looks really cozy. What kind of music have you been listening to lately?</div></div>
+      <div class="msg user"><div class="ico">👤</div><div class="b">Hi, indian telugu music</div></div>
+      <div class="msg"><div class="ico">🤖</div><div class="b">That's great! Do you have a favorite artist or song from the Telugu music scene that you really enjoy right now?</div></div>
+      <div class="msg user"><div class="ico">👤</div><div class="b">a song from famous movie</div></div>
+      <div class="msg"><div class="ico">🤖</div><div class="b">That sounds interesting! What do you like most about that song from the movie? Is it the melody, the lyrics, or something else?</div></div>
+    </div>
+  </section>
+  <section class="video">
+    <svg class="person" viewBox="0 0 200 220" preserveAspectRatio="xMidYMax meet">
+      <path d="M0 220c0-45 40-65 100-65s100 20 100 65z" fill="#3b4a63"/>
+      <path d="M40 120c-6-70 30-100 60-100s68 30 60 100c-4 40 8 70 8 100H32c0-30 12-60 8-100z" fill="#1c1715"/>
+      <ellipse cx="100" cy="95" rx="38" ry="48" fill="#b98262"/>
+    </svg>
+    <div class="tag">Neutral</div>
+  </section>
+  <section class="panel sys">
+    <div class="panel-h">System Status <small>Active</small></div>
+    <div class="meta"><div><span>PHASE:</span><b>intro</b></div><div><span>STEP:</span><b>3/3</b></div><div><span>MODEL:</span><b>gpt-4o-mini</b></div></div>
+    <div class="logs">
+      <div class="log ok"><time>13:10:29</time><span class="badge success">success</span>Session b1e9246b-7fff-4f74-a86d-b68d199d6c95 created successfully.</div>
+      <div class="log ok"><time>13:10:30</time><span class="badge success">success</span>Dashboard opened in new window</div>
+      <div class="log"><time>13:10:30</time><span class="badge">intro</span>Starting intro phase...</div>
+      <div class="log"><time>13:10:32</time><span class="badge">intro</span>Generated question for step 1/3</div>
+      <div class="log"><time>13:11:03</time><span class="badge">intro</span>Response saved for step 1</div>
+      <div class="log"><time>13:11:04</time><span class="badge">intro</span>Generated question for step 2/3</div>
+      <div class="log"><time>13:11:34</time><span class="badge">intro</span>Response saved for step 2</div>
+      <div class="log"><time>13:11:36</time><span class="badge">intro</span>Generated question for step 3/3</div>
+    </div>
+  </section>
+  <section class="panel">
+    <div class="panel-h">Session Info <small>Vision Analysis</small></div>
+    <div class="info">
+      <h4>APPEARANCE</h4>
+      <div class="chips"><span class="chip blue">The person is wearing a blue knit sweater. The style appears to be casual, fitting for a relaxed environment.</span></div>
+      <h4>DETECTED OBJECTS</h4>
+      <div class="chips"><span class="chip">artificial_flower_arrangement</span><span class="chip">sticky_notes</span><span class="chip">pillar_candle</span><span class="chip">pen_holder_with_pens</span></div>
+      <h4>TOPICS OF INTEREST</h4>
+      <div class="chips"><span class="chip">Music</span></div>
+    </div>
+  </section>
+</div>
+</body></html>

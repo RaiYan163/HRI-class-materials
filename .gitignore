@@ -1,0 +1,26 @@
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+
+# Python / notebook caches
+__pycache__/
+*.py[cod]
+.ipynb_checkpoints/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.venv/
+venv/
+
+# Editors / Office temp files
+.vscode/
+.idea/
+~$*
+
+# Claude Code local-only settings
+.claude/settings.local.json
+
+# Node
+node_modules/

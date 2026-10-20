@@ -1,0 +1,144 @@
+/* ─── Design tokens ─────────────────────────────────────────── */
+:root {
+  --stage-background: #e6e7ea;
+  --head-color: #3b82f6;
+  --body-color: #6d4fd6;
+  --limb-color: #1f2937;
+  --success-green: #16a34a;
+  --success-green-light: #dcfce7;
+  --danger-red: #dc2626;
+  --danger-red-light: #fee2e2;
+  --move-transition-s: 0.15s;
+}
+
+
+/* ─── Stage ─────────────────────────────────────────────────── */
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  overflow: hidden; /* the robot is clamped to the window, no scrolling */
+  background: var(--stage-background);
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.status-badge {
+  position: fixed;
+  top: 16px;
+  right: 16px;
+  padding: 6px 16px;
+  border-radius: 999px;
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.status-connected {
+  background: var(--success-green-light);
+  color: var(--success-green);
+}
+
+.status-disconnected {
+  background: var(--danger-red-light);
+  color: var(--danger-red);
+}
+
+
+/* ─── Robot container ───────────────────────────────────────── */
+.robot {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 140px;
+  height: 280px;
+  transition: top var(--move-transition-s), left var(--move-transition-s);
+}
+
+
+/* ─── Head ──────────────────────────────────────────────────── */
+.robot-head {
+  position: absolute;
+  top: 0;
+  left: 30px;
+  width: 80px;
+  height: 72px;
+  border-radius: 18px;
+  background: var(--head-color);
+}
+
+.robot-eye {
+  position: absolute;
+  top: 24px;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: #ffffff;
+}
+
+.robot-eye-left {
+  left: 20px;
+}
+
+.robot-eye-right {
+  right: 20px;
+}
+
+.robot-mouth {
+  position: absolute;
+  bottom: 14px;
+  left: 24px;
+  width: 32px;
+  height: 4px;
+  border-radius: 2px;
+  background: #ffffff;
+}
+
+
+/* ─── Body and limbs ────────────────────────────────────────── */
+.robot-body {
+  position: absolute;
+  top: 80px;
+  left: 20px;
+  width: 100px;
+  height: 110px;
+  border-radius: 14px;
+  background: var(--body-color);
+}
+
+.robot-arm {
+  position: absolute;
+  top: 86px;
+  width: 18px;
+  height: 90px;
+  border-radius: 9px;
+  background: var(--limb-color);
+  transform-origin: top center; /* pivot at the shoulder */
+  transition: transform 0.3s;
+}
+
+.robot-arm-left {
+  left: 0;
+}
+
+.robot-arm-right {
+  left: 122px;
+}
+
+.robot-leg {
+  position: absolute;
+  top: 196px;
+  width: 26px;
+  height: 80px;
+  border-radius: 8px;
+  background: var(--limb-color);
+}
+
+.robot-leg-left {
+  left: 32px;
+}
+
+.robot-leg-right {
+  left: 82px;
+}

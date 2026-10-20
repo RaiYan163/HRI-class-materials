@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Voice Conversation</title><link rel="stylesheet" href="styles.css"></head>
+<body class="voice">
+<main class="vmain">
+  <div class="vhead">
+    <h2>Voice Conversation</h2>
+    <span class="pill">Session: b1e9246b-7fff-4f74-a86d-b68d199d6c95</span><span class="pill">Phase: Intro</span>
+  </div>
+  <div class="hints"><span>Welcome! Click "Start Session" to begin the voice conversation.</span><span>You can speak your responses or type them.</span></div>
+  <div class="vchat">
+    <div class="sysline">🎤 Voice-enabled system ready! Switch between voice and text input.<br>1:10:22 PM</div>
+    <div class="sysline">Session started! Beginning intro conversation...<br>1:10:29 PM</div>
+    <div class="who-l">Assistant</div>
+    <div class="bub">Hi Rosy! I love your blue knit sweater; it looks really cozy. What kind of music have you been listening to lately?</div>
+    <div class="step"><b>Step 1/2</b> 13:10:32</div>
+    <div class="sysline">🔊 Generating speech...<br>1:10:32 PM</div>
+    <div class="sysline">🔄 Loading speech...<br>1:10:36 PM</div>
+    <div class="sysline">🔊 Playing speech...<br>1:10:36 PM</div>
+    <div class="sysline">✓ Speech completed<br>1:10:45 PM</div>
+    <div class="who-l right">You</div>
+    <div class="bub me">Hi, indian telugu music</div>
+    <div class="step right"><b>Step 1/2</b> 13:11:03</div>
+    <div class="who-l">Assistant</div>
+    <div class="bub">That's great! Do you have a favorite artist or song from the Telugu music scene that you really enjoy right now?</div>
+    <div class="step"><b>Step 2/2</b> 13:11:04</div>
+    <div class="sysline">🔊 Generating speech...<br>1:11:04 PM</div>
+    <div class="sysline">🔄 Loading speech...<br>1:11:05 PM</div>
+    <div class="sysline">🔊 Playing speech...<br>1:11:05 PM</div>
+  </div>
+  <div class="vinput">
+    <div class="toggle"><button>🎤 Voice</button><button class="on">⌨ Text</button></div>
+    <div class="inputrow"><textarea placeholder="Your transcribed speech will appear here, or type your response..."></textarea><button class="send">Send ➤</button></div>
+    <div class="ctrls"><button class="c-start">Start Session</button><button class="c-pause">Pause</button><button class="c-reset">Reset</button></div>
+  </div>
+</main>
+<aside class="vlogs">
+  <header>System Logs <div><button>Clear</button><button class="pin">Pin</button></div></header>
+  <div class="meta"><div><span>PHASE:</span><b>Intro Phase</b></div><div><span>STEP:</span><b>3/3</b></div><div><span>MODEL:</span><b>gpt-4o-mini</b></div></div>
+  <div class="logs">
+    <div class="log"><time>00:00:00</time><span class="badge">system</span>Voice system ready. Waiting for session start.</div>
+    <div class="log"><time>13:10:22</time><span class="badge">system</span>Frontend initialized and ready.</div>
+    <div class="log"><time>13:10:22</time><span class="badge">system</span>Switched to voice input mode</div>
+    <div class="log"><time>13:10:24</time><span class="badge">system</span>Switched to text input mode</div>
+    <div class="log"><time>13:10:29</time><span class="badge">system</span>Initializing new session...</div>
+    <div class="log"><time>13:10:29</time><span class="badge">system</span>Loaded profile for Rosy with 4 cues</div>
+    <div class="log ok"><time>13:10:29</time><span class="badge success">success</span>Session b1e9246b-7fff-4f74-a86d-b68d199d6c95 created successfully.</div>
+    <div class="log ok"><time>13:10:30</time><span class="badge success">success</span>Dashboard opened in new window</div>
+    <div class="log in"><time>13:10:30</time><span class="badge intro">intro</span>Starting intro phase...</div>
+    <div class="log in"><time>13:10:32</time><span class="badge intro">intro</span>Generated question for step 1/3</div>
+    <div class="log in"><time>13:11:03</time><span class="badge intro">intro</span>Response saved for step 1</div>
+    <div class="log in"><time>13:11:04</time><span class="badge intro">intro</span>Generated question for step 2/3</div>
+    <div class="log in"><time>13:11:34</time><span class="badge intro">intro</span>Response saved for step 2</div>
+    <div class="log in"><time>13:11:36</time><span class="badge intro">intro</span>Generated question for step 3/3</div>
+  </div>
+</aside>
+</body></html>

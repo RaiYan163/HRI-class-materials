@@ -1,0 +1,119 @@
+/* ─── Talk panel ────────────────────────────────────────────── */
+.chat-log {
+  flex: 1;
+  min-height: 200px;
+  max-height: 260px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 12px;
+  background: #ffffff;
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+}
+
+.chat-entry {
+  align-self: flex-end;
+  max-width: 85%;
+  padding: 8px 14px;
+  border-radius: 14px 14px 2px 14px;
+  background: linear-gradient(
+    135deg,
+    var(--accent-blue),
+    var(--accent-purple)
+  );
+  color: #ffffff;
+  word-wrap: break-word;
+}
+
+.chat-form {
+  display: flex;
+  gap: 8px;
+}
+
+.chat-form input {
+  flex: 1;
+  min-width: 0;
+  padding: 10px 14px;
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  font-size: 1rem;
+}
+
+
+/* ─── Buttons ───────────────────────────────────────────────── */
+.primary-button,
+.gesture-button {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 12px;
+  background: var(--navy);
+  color: #ffffff;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.primary-button:hover,
+.gesture-button:hover,
+.dpad-button:hover {
+  background: var(--navy-hover);
+}
+
+.primary-button:disabled,
+.gesture-button:disabled,
+.dpad-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.gesture-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.gesture-button {
+  padding: 14px;
+}
+
+
+/* ─── D-pad ─────────────────────────────────────────────────── */
+.dpad {
+  display: grid;
+  grid-template-columns: repeat(3, 64px);
+  grid-template-rows: repeat(3, 64px);
+  gap: 8px;
+  justify-content: center;
+  padding: 12px 0;
+}
+
+.dpad-button {
+  border: none;
+  border-radius: 14px;
+  background: var(--navy);
+  color: #ffffff;
+  font-size: 1.3rem;
+  cursor: pointer;
+}
+
+.dpad-up {
+  grid-column: 2;
+  grid-row: 1;
+}
+
+.dpad-left {
+  grid-column: 1;
+  grid-row: 2;
+}
+
+.dpad-right {
+  grid-column: 3;
+  grid-row: 2;
+}
+
+.dpad-down {
+  grid-column: 2;
+  grid-row: 3;
+}

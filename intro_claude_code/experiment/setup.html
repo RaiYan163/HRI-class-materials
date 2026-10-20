@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>New Session Setup</title><link rel="stylesheet" href="styles.css"></head>
+<body class="setup-page">
+<form class="setup-card" action="dashboard.html">
+  <h1>New Session Setup</h1>
+  <p class="sub">Enter user details to initialize Pepper Robot Interaction</p>
+  <div class="row">
+    <div><label for="name">Full Name</label><input id="name" value="Rose"></div>
+    <div><label for="age">Age</label><input id="age" type="number" value="28"></div>
+    <div><label for="gender">Gender</label>
+      <select id="gender"><option>Female</option><option>Male</option><option>Other</option></select></div>
+  </div>
+  <div style="margin-bottom:26px"><label for="topics">Topics of Interest</label><input id="topics" value="Music"></div>
+  <div class="group blue">
+    <label for="theme">Conversation Theme</label>
+    <select id="theme"><option>Travel</option><option>Food</option><option>Hobbies</option><option>Family</option></select>
+  </div>
+  <div class="group purple">
+    <h3>LLM Model Configuration</h3>
+    <label for="big">Big LLM (Planning &amp; Analysis)</label>
+    <select id="big"><option>GPT-4o (OpenAI)</option><option>GPT-4o mini (OpenAI)</option></select>
+    <label for="small">Small LLM (Question Generation)</label>
+    <select id="small"><option>Llama 3.2 3B (Ollama)</option><option>Llama 3.1 8B (Ollama)</option></select>
+  </div>
+  <button class="btn-primary" type="submit">Start Interaction Session</button>
+</form>
+</body></html>
