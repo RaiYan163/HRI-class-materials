@@ -3,3 +3,5 @@ opencv-python==4.10.0.84
 numpy
 ultralytics
 mediapipe
+faster-whisper==1.1.1
+av==16.1.0

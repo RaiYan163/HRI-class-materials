@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Hand Tracking — ATR Lab</title>
+  <style>
+    :root {
+      --bg: #0f172a;
+      --card: #1e293b;
+      --border: #334155;
+      --text: #e2e8f0;
+      --muted: #94a3b8;
+      --accent: #facc15;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      height: 100vh;
+      display: flex;
+      background: var(--bg);
+      color: var(--text);
+      font-family: system-ui, sans-serif;
+    }
+
+    .video-column {
+      width: 65%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      padding: 24px;
+    }
+
+    #videoFeed {
+      width: 100%;
+      flex: 1;
+      min-height: 0;
+      object-fit: contain;
+    }
+
+    #frameSize {
+      font-family: ui-monospace, monospace;
+      font-size: 0.8rem;
+      color: var(--muted);
+    }
+
+    .side-column {
+      width: 35%;
+      padding: 24px;
+      border-left: 1px solid var(--border);
+      overflow-y: auto;
+    }
+
+    h2 { font-size: 1.05rem; margin-bottom: 12px; }
+
+    .hand-card {
+      margin-bottom: 10px;
+      padding: 14px 16px;
+      background: var(--card);
+      border-left: 4px solid var(--accent);
+      border-radius: 8px;
+      font-family: ui-monospace, monospace;
+      font-size: 0.9rem;
+    }
+
+    .hand-title { font-weight: 700; margin-bottom: 8px; }
+
+    .coordinate-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 2px 0;
+    }
+
+    #trackBtn {
+      width: 100%;
+      margin-bottom: 16px;
+      padding: 12px;
+      color: #111;
+      background: var(--accent);
+      border: none;
+      border-radius: 8px;
+      font-size: 1rem;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    #trackBtn.active { color: var(--text); background: #dc2626; }
+
+    .coordinate-label { color: var(--muted); }
+    .empty-state { color: var(--muted); text-align: center; padding: 24px; }
+
+    @media (max-width: 800px) {
+      body { flex-direction: column; height: auto; }
+      .video-column, .side-column { width: 100%; }
+      .side-column { border-left: none; }
+    }
+  </style>
+</head>
+<body>
+  <section class="video-column">
+    <img id="videoFeed" alt="Video stream">
+    <p id="frameSize"></p>
+  </section>
+
+  <aside class="side-column">
+    <button id="trackBtn">Start Tracking</button>
+    <h2>Hand Position (pixels)</h2>
+    <div id="handList"></div>
+  </aside>
+
+  <script>
+    const VIDEO_POLL_MS = 80;
+    const HAND_POLL_MS = 100;
+
+    const videoFeed = document.getElementById('videoFeed');
+    const frameSize = document.getElementById('frameSize');
+    const handList = document.getElementById('handList');
+    const trackBtn = document.getElementById('trackBtn');
+
+    let tracking = false;
+
+    function formatPoint(point) {
+      return '(' + point.x + ', ' + point.y + ')';
+    }
+
+    function renderRow(label, point) {
+      return '<div class="coordinate-row"><span class="coordinate-label">' +
+        label + '</span><span>' + formatPoint(point) + '</span></div>';
+    }
+
+    function renderHand(hand) {
+      return '<div class="hand-card"><div class="hand-title">' +
+        hand.hand + ' hand</div>' +
+        renderRow('Palm center', hand.palm) +
+        renderRow('Wrist', hand.wrist) +
+        renderRow('Index tip', hand.index_tip) + '</div>';
+    }
+
+    function applyTrackingState(enabled) {
+      tracking = enabled;
+      trackBtn.textContent = enabled ? 'Stop Tracking' : 'Start Tracking';
+      trackBtn.classList.toggle('active', enabled);
+    }
+
+    async function toggleTracking() {
+      try {
+        const response = await fetch('/tracking', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ enabled: !tracking }),
+        });
+        const data = await response.json();
+        if (response.ok) applyTrackingState(data.tracking);
+      } catch (err) {
+        // Keep the current state if the server is unreachable
+      }
+    }
+
+    function renderHands(data) {
+      applyTrackingState(data.tracking);
+      if (data.width > 0) {
+        frameSize.textContent =
+          'Frame ' + data.width + ' × ' + data.height +
+          ' · (0, 0) is top-left';
+      }
+      if (!data.tracking) {
+        handList.innerHTML =
+          '<p class="empty-state">Tracking is off</p>';
+        return;
+      }
+      if (data.hands.length === 0) {
+        handList.innerHTML = '<p class="empty-state">No hand detected</p>';
+        return;
+      }
+      handList.innerHTML = data.hands.map(renderHand).join('');
+    }
+
+    function startVideoPolling() {
+      setInterval(() => {
+        videoFeed.src = '/frame?t=' + Date.now();
+      }, VIDEO_POLL_MS);
+    }
+
+    function startHandPolling() {
+      setInterval(async () => {
+        try {
+          const response = await fetch('/hand');
+          renderHands(await response.json());
+        } catch (err) {
+          // Skip this tick; the next poll retries
+        }
+      }, HAND_POLL_MS);
+    }
+
+    trackBtn.addEventListener('click', toggleTracking);
+
+    document.addEventListener('DOMContentLoaded', () => {
+      startVideoPolling();
+      startHandPolling();
+    });
+  </script>
+</body>
+</html>
