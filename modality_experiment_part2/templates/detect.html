@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Live Detection — ATR Lab</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #0f172a;
+      --card: #1e293b;
+      --card-active: #273449;
+      --border: #334155;
+      --text: #e2e8f0;
+      --muted: #94a3b8;
+      --green: #22c55e;
+      --blue: #38bdf8;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      height: 100vh;
+      display: flex;
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'DM Sans', sans-serif;
+    }
+
+    .video-column {
+      width: 60%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      padding: 24px;
+    }
+
+    #videoFeed {
+      display: none;
+      width: 100%;
+      flex: 1;
+      min-height: 0;
+      object-fit: contain;
+    }
+
+    #placeholder {
+      width: 100%;
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: 2px dashed var(--border);
+      border-radius: 8px;
+      color: var(--muted);
+    }
+
+    .stream-controls {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    #streamBtn {
+      padding: 10px 18px;
+      color: var(--bg);
+      font-family: inherit;
+      font-weight: 700;
+      background: var(--green);
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+
+    #streamBtn.running { background: var(--card); color: var(--text); }
+
+    #frameSize {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.8rem;
+      color: var(--muted);
+    }
+
+    .side-column {
+      width: 40%;
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+      padding: 24px;
+      border-left: 1px solid var(--border);
+      overflow-y: auto;
+    }
+
+    h2 { font-size: 1.05rem; margin-bottom: 12px; }
+
+    .mode-card {
+      display: block;
+      width: 100%;
+      text-align: left;
+      margin-bottom: 10px;
+      padding: 14px 16px;
+      color: var(--text);
+      font-family: inherit;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-left: 4px solid var(--border);
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background 0.15s, border-color 0.15s;
+    }
+
+    .mode-card:hover { background: var(--card-active); }
+    .mode-title { font-weight: 700; }
+    .mode-subtitle { font-size: 0.85rem; color: var(--muted); }
+
+    .mode-card.active { background: var(--card-active); }
+    #yoloCard.active { border-left-color: var(--green); }
+    #mediapipeCard.active { border-left-color: var(--blue); }
+
+    #detectionsList {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .detection-row {
+      padding: 10px 14px;
+      background: var(--card);
+      border-radius: 8px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.9rem;
+      animation: fade-in 0.15s ease-out;
+    }
+
+    @keyframes fade-in {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    .detection-header {
+      display: flex;
+      justify-content: space-between;
+    }
+
+    .confidence-track {
+      height: 4px;
+      margin-top: 8px;
+      background: var(--border);
+      border-radius: 2px;
+    }
+
+    .confidence-fill {
+      height: 100%;
+      background: var(--green);
+      border-radius: 2px;
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 24px;
+      color: var(--muted);
+    }
+
+    @media (max-width: 800px) {
+      body { flex-direction: column; height: auto; }
+      .video-column, .side-column { width: 100%; }
+      .side-column { border-left: none; }
+    }
+  </style>
+</head>
+<body>
+  <section class="video-column">
+    <img id="videoFeed" alt="Video stream">
+    <div id="placeholder">Stream inactive</div>
+    <div class="stream-controls">
+      <button id="streamBtn">Start Stream</button>
+      <p id="frameSize"></p>
+    </div>
+  </section>
+
+  <aside class="side-column">
+    <section>
+      <h2>Detection Mode</h2>
+      <button class="mode-card active" id="yoloCard"
+              onclick="switchMode('yolo')">
+        <div class="mode-title">YOLOv8 Nano</div>
+        <div class="mode-subtitle">Object detection · 80 classes</div>
+      </button>
+      <button class="mode-card" id="mediapipeCard"
+              onclick="switchMode('mediapipe')">
+        <div class="mode-title">MediaPipe Hands</div>
+        <div class="mode-subtitle">Hand gesture recognition</div>
+      </button>
+    </section>
+
+    <section>
+      <h2><span id="panelHeading">Detections</span></h2>
+      <div id="detectionsList"></div>
+    </section>
+  </aside>
+
+  <script>
+    const VIDEO_POLL_MS = 80;
+    const DETECTION_POLL_MS = 300;
+    const PERCENT = 100;
+    const FRAME_SIZE_RETRY_MS = 500;
+
+    const videoFeed = document.getElementById('videoFeed');
+    const frameSize = document.getElementById('frameSize');
+    const panelHeading = document.getElementById('panelHeading');
+    const detectionsList = document.getElementById('detectionsList');
+    const cards = {
+      yolo: document.getElementById('yoloCard'),
+      mediapipe: document.getElementById('mediapipeCard'),
+    };
+    const headings = { yolo: 'Detections', mediapipe: 'Gestures' };
+
+    const placeholder = document.getElementById('placeholder');
+    const streamBtn = document.getElementById('streamBtn');
+
+    let activeMode = 'yolo';
+    let videoInterval = null;
+    let detectionInterval = null;
+
+    function startVideoPolling() {
+      videoInterval = setInterval(() => {
+        videoFeed.src = '/frame?t=' + Date.now();
+      }, VIDEO_POLL_MS);
+    }
+
+    function startStream() {
+      placeholder.style.display = 'none';
+      videoFeed.style.display = 'block';
+      streamBtn.textContent = 'Stop Stream';
+      streamBtn.classList.add('running');
+      fetchFrameSize();
+      startVideoPolling();
+      startDetectionPolling();
+    }
+
+    function stopStream() {
+      clearInterval(videoInterval);
+      clearInterval(detectionInterval);
+      videoInterval = null;
+      detectionInterval = null;
+      videoFeed.style.display = 'none';
+      placeholder.style.display = 'flex';
+      streamBtn.textContent = 'Start Stream';
+      streamBtn.classList.remove('running');
+      detectionsList.innerHTML = '';
+    }
+
+    function toggleStream() {
+      if (videoInterval === null) {
+        startStream();
+      } else {
+        stopStream();
+      }
+    }
+
+    async function fetchFrameSize() {
+      try {
+        const response = await fetch('/frame_size');
+        const size = await response.json();
+        if (size.width === 0) {
+          // Camera is still opening; ask again shortly
+          setTimeout(fetchFrameSize, FRAME_SIZE_RETRY_MS);
+          return;
+        }
+        frameSize.textContent = size.width + ' × ' + size.height;
+      } catch (err) {
+        setTimeout(fetchFrameSize, FRAME_SIZE_RETRY_MS);
+      }
+    }
+
+    function applyModeStyling(mode) {
+      activeMode = mode;
+      Object.entries(cards).forEach(([name, card]) => {
+        card.classList.toggle('active', name === mode);
+      });
+      panelHeading.textContent = headings[mode];
+      detectionsList.innerHTML = '';
+    }
+
+    async function switchMode(mode) {
+      try {
+        const response = await fetch('/set_mode', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ mode }),
+        });
+        if (!response.ok) return;
+        applyModeStyling(mode);
+      } catch (err) {
+        // Leave the current mode shown if the server is unreachable
+      }
+    }
+
+    function escapeHtml(text) {
+      const div = document.createElement('div');
+      div.textContent = text;
+      return div.innerHTML;
+    }
+
+    function renderYoloRow(det) {
+      const percent = Math.round(det.confidence * PERCENT);
+      return '<div class="detection-row">' +
+        '<div class="detection-header"><span>' + escapeHtml(det.label) +
+        '</span><span>' + percent + '%</span></div>' +
+        '<div class="confidence-track"><div class="confidence-fill" ' +
+        'style="width:' + percent + '%"></div></div></div>';
+    }
+
+    function renderMediapipeRow(det) {
+      return '<div class="detection-row">' + escapeHtml(det.hand) +
+        ' hand — ' + escapeHtml(det.gesture) + '</div>';
+    }
+
+    function renderDetections(data) {
+      if (data.mode !== activeMode) return;
+      if (data.detections.length === 0) {
+        detectionsList.innerHTML =
+          '<p class="empty-state">Nothing detected</p>';
+        return;
+      }
+      const renderRow =
+        data.mode === 'yolo' ? renderYoloRow : renderMediapipeRow;
+      detectionsList.innerHTML = data.detections.map(renderRow).join('');
+    }
+
+    function startDetectionPolling() {
+      detectionInterval = setInterval(async () => {
+        try {
+          const response = await fetch('/detections');
+          renderDetections(await response.json());
+        } catch (err) {
+          // Skip this tick; the next poll retries
+        }
+      }, DETECTION_POLL_MS);
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      streamBtn.addEventListener('click', toggleStream);
+    });
+  </script>
+</body>
+</html>

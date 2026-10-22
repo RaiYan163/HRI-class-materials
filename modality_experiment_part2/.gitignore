@@ -1,2 +1,6 @@
 temp/frame.jpg
 temp/frame.jpg.tmp
+hand_landmarker.task
+yolov8n.pt
+temp/detect_frame.jpg
+temp/detect_frame.tmp
