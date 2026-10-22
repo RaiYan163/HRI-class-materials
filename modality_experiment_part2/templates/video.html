@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Video Annotation — ATR Lab</title>
+  <style>
+    :root {
+      --bg: #111;
+      --text: #eee;
+      --panel: #1a1a1a;
+      --field: #262626;
+      --border: #333;
+      --muted: #999;
+      --blue: #3b6fd4;
+      --amber: #e0a100;
+      --red: #d23c3c;
+      --ok: #3fb950;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      min-height: 100vh;
+      background: var(--bg);
+      color: var(--text);
+      font-family: system-ui, sans-serif;
+    }
+
+    .layout {
+      display: flex;
+      gap: 20px;
+      padding: 20px;
+      height: 100vh;
+    }
+
+    .video-column {
+      flex: 1;
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .viewport {
+      flex: 1;
+      min-height: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    #stream {
+      display: none;
+      max-width: 100%;
+      max-height: 100%;
+      border: 2px solid var(--border);
+      border-radius: 8px;
+    }
+
+    #placeholder {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: 2px dashed var(--border);
+      border-radius: 8px;
+      color: var(--muted);
+    }
+
+    .stream-controls {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .status {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: var(--muted);
+      font-size: 0.9rem;
+    }
+
+    #status-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: var(--red);
+    }
+
+    #status-dot.on { background: var(--ok); }
+
+    .controls-panel {
+      width: 320px;
+      flex-shrink: 0;
+      overflow-y: auto;
+      background: var(--panel);
+      border-radius: 10px;
+      padding: 18px;
+    }
+
+    #coordinate-limits {
+      font-size: 0.85rem;
+      color: var(--amber);
+      padding-bottom: 14px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .control-section {
+      padding: 16px 0;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .control-section:last-child { border-bottom: none; }
+
+    h2 { font-size: 1rem; }
+
+    label {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      font-size: 0.8rem;
+      color: var(--muted);
+    }
+
+    input, select {
+      background: var(--field);
+      color: var(--text);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 8px;
+      font-size: 0.95rem;
+    }
+
+    input:focus, select:focus {
+      outline: 2px solid var(--blue);
+      outline-offset: -1px;
+    }
+
+    button {
+      color: #fff;
+      background: var(--blue);
+      border: none;
+      border-radius: 6px;
+      padding: 10px 14px;
+      font-size: 0.95rem;
+      cursor: pointer;
+    }
+
+    button:hover { filter: brightness(1.15); }
+
+    #timestamp-btn { background: var(--amber); color: #111; }
+    #reset-btn { background: var(--red); }
+    #stop-btn { display: none; background: var(--field); }
+
+    .message {
+      min-height: 1.1em;
+      font-size: 0.8rem;
+      color: var(--ok);
+      opacity: 0;
+      transition: opacity 0.4s;
+    }
+
+    .message.visible { opacity: 1; }
+    .message.error { color: var(--red); }
+
+    @media (max-width: 800px) {
+      .layout { flex-direction: column; height: auto; }
+      .viewport { min-height: 240px; }
+      .controls-panel { width: 100%; }
+    }
+  </style>
+</head>
+<body>
+  <div class="layout">
+    <main class="video-column">
+      <div class="viewport">
+        <img id="stream" alt="Live camera stream">
+        <div id="placeholder">Stream inactive</div>
+      </div>
+      <div class="stream-controls">
+        <button id="watch-btn">Start Stream</button>
+        <button id="stop-btn">Stop Stream</button>
+        <div class="status">
+          <span id="status-dot"></span>
+          <span id="status-text">Disconnected</span>
+        </div>
+      </div>
+    </main>
+
+    <aside class="controls-panel">
+      <p id="coordinate-limits">Loading frame size...</p>
+
+      <section class="control-section">
+        <h2>Color</h2>
+        <select id="color-select">
+          <option value="green">green</option>
+          <option value="red">red</option>
+          <option value="blue">blue</option>
+          <option value="yellow">yellow</option>
+          <option value="cyan">cyan</option>
+          <option value="magenta">magenta</option>
+          <option value="orange">orange</option>
+          <option value="white">white</option>
+          <option value="black">black</option>
+        </select>
+        <p class="message" id="color-message"></p>
+      </section>
+
+      <section class="control-section">
+        <h2>Add Text</h2>
+        <input type="text" id="text-content" placeholder="Enter text...">
+        <label>X
+          <input type="number" id="text-x" min="0">
+        </label>
+        <label>Y
+          <input type="number" id="text-y" min="0">
+        </label>
+        <label>Font size (px, 10–100)
+          <input type="number" id="text-font-size" min="10" max="100"
+                 value="24">
+        </label>
+        <button id="add-text-btn">Add Text</button>
+        <p class="message" id="text-message"></p>
+      </section>
+
+      <section class="control-section">
+        <h2>Add Shape</h2>
+        <select id="shape-type">
+          <option value="circle">circle</option>
+          <option value="triangle">triangle</option>
+          <option value="rectangle">rectangle</option>
+          <option value="pentagon">pentagon</option>
+          <option value="hexagon">hexagon</option>
+        </select>
+        <label>X (center)
+          <input type="number" id="shape-x" min="0">
+        </label>
+        <label>Y (center)
+          <input type="number" id="shape-y" min="0">
+        </label>
+        <label>Size (px, 50–500)
+          <input type="number" id="shape-size" min="50" max="500"
+                 value="100">
+        </label>
+        <label>Thickness (px, 1–20)
+          <input type="number" id="shape-thickness" min="1" max="20"
+                 value="2">
+        </label>
+        <button id="add-shape-btn">Add Shape</button>
+        <p class="message" id="shape-message"></p>
+      </section>
+
+      <section class="control-section">
+        <h2>Timestamp</h2>
+        <label>Font size (px, 10–100)
+          <input type="number" id="timestamp-font-size" min="10" max="100"
+                 value="24">
+        </label>
+        <button id="timestamp-btn">Show Timestamp</button>
+        <p class="message" id="timestamp-message"></p>
+      </section>
+
+      <section class="control-section">
+        <h2>Reset</h2>
+        <button id="reset-btn">Reset All</button>
+        <p class="message" id="reset-message"></p>
+      </section>
+    </aside>
+  </div>
+
+  <script>
+    const POLL_INTERVAL_MS = 80;
+    const MESSAGE_DURATION_MS = 2000;
+
+    const img = document.getElementById('stream');
+    const placeholder = document.getElementById('placeholder');
+    const watchBtn = document.getElementById('watch-btn');
+    const stopBtn = document.getElementById('stop-btn');
+    const statusDot = document.getElementById('status-dot');
+    const statusText = document.getElementById('status-text');
+    const timestampBtn = document.getElementById('timestamp-btn');
+
+    let streamInterval = null;
+    const messageTimers = {};
+
+    function startStream() {
+      placeholder.style.display = 'none';
+      img.style.display = 'block';
+      watchBtn.style.display = 'none';
+      stopBtn.style.display = 'inline-block';
+      statusDot.classList.add('on');
+      statusText.textContent = 'Streaming';
+      streamInterval = setInterval(() => {
+        img.src = '/frame?t=' + Date.now();
+      }, POLL_INTERVAL_MS);
+    }
+
+    function stopStream() {
+      clearInterval(streamInterval);
+      streamInterval = null;
+      img.style.display = 'none';
+      placeholder.style.display = 'flex';
+      stopBtn.style.display = 'none';
+      watchBtn.style.display = 'inline-block';
+      statusDot.classList.remove('on');
+      statusText.textContent = 'Disconnected';
+    }
+
+    function showMessage(id, text, isError) {
+      const el = document.getElementById(id);
+      clearTimeout(messageTimers[id]);
+      el.textContent = text;
+      el.classList.toggle('error', Boolean(isError));
+      el.classList.add('visible');
+      messageTimers[id] = setTimeout(() => {
+        el.classList.remove('visible');
+      }, MESSAGE_DURATION_MS);
+    }
+
+    async function postJson(url, body) {
+      const options = { method: 'POST' };
+      if (body) {
+        options.headers = { 'Content-Type': 'application/json' };
+        options.body = JSON.stringify(body);
+      }
+      const response = await fetch(url, options);
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data.error || 'Request failed');
+      }
+      return data;
+    }
+
+    function readInt(id) {
+      const value = document.getElementById(id).value.trim();
+      return value === '' ? NaN : parseInt(value, 10);
+    }
+
+    async function loadFrameSize() {
+      const label = document.getElementById('coordinate-limits');
+      try {
+        const response = await fetch('/frame_size');
+        const size = await response.json();
+        if (!response.ok) throw new Error(size.error);
+        label.textContent = 'Valid coordinates: 0–' + size.width +
+          ' (X) · 0–' + size.height + ' (Y)';
+      } catch (err) {
+        label.textContent = 'Frame size not available yet — reload shortly';
+      }
+    }
+
+    async function addText() {
+      const content = document.getElementById('text-content').value.trim();
+      const x = readInt('text-x');
+      const y = readInt('text-y');
+      const font_size = readInt('text-font-size');
+      if (!content || [x, y, font_size].some(Number.isNaN)) {
+        showMessage('text-message', 'Fill in text, X, Y and font size', true);
+        return;
+      }
+      try {
+        await postJson('/add_text', { content, x, y, font_size });
+        showMessage('text-message', 'Text added');
+      } catch (err) {
+        showMessage('text-message', err.message, true);
+      }
+    }
+
+    async function addShape() {
+      const shape = document.getElementById('shape-type').value;
+      const x = readInt('shape-x');
+      const y = readInt('shape-y');
+      const size = readInt('shape-size');
+      const thickness = readInt('shape-thickness');
+      if ([x, y, size, thickness].some(Number.isNaN)) {
+        showMessage('shape-message', 'Fill in X, Y, size and thickness', true);
+        return;
+      }
+      try {
+        await postJson('/add_shape', { shape, x, y, size, thickness });
+        showMessage('shape-message', 'Shape added');
+      } catch (err) {
+        showMessage('shape-message', err.message, true);
+      }
+    }
+
+    async function toggleTimestamp() {
+      try {
+        const data = await postJson('/toggle_timestamp');
+        timestampBtn.textContent =
+          data.show_timestamp ? 'Hide Timestamp' : 'Show Timestamp';
+      } catch (err) {
+        showMessage('timestamp-message', err.message, true);
+      }
+    }
+
+    async function setColor() {
+      const color = document.getElementById('color-select').value;
+      try {
+        await postJson('/set_color', { color });
+        showMessage('color-message', 'Next drawings will be ' + color);
+      } catch (err) {
+        showMessage('color-message', err.message, true);
+      }
+    }
+
+    async function setTimestampFontSize() {
+      const font_size = readInt('timestamp-font-size');
+      if (Number.isNaN(font_size)) return;
+      try {
+        await postJson('/timestamp_font_size', { font_size });
+      } catch (err) {
+        showMessage('timestamp-message', err.message, true);
+      }
+    }
+
+    async function resetAll() {
+      try {
+        await postJson('/reset');
+        timestampBtn.textContent = 'Show Timestamp';
+        document.getElementById('timestamp-font-size').value = 24;
+        document.getElementById('color-select').value = 'green';
+        showMessage('reset-message', 'Cleared');
+      } catch (err) {
+        showMessage('reset-message', err.message, true);
+      }
+    }
+
+    watchBtn.addEventListener('click', startStream);
+    stopBtn.addEventListener('click', stopStream);
+    document.getElementById('add-text-btn').addEventListener('click', addText);
+    document.getElementById('add-shape-btn')
+      .addEventListener('click', addShape);
+    timestampBtn.addEventListener('click', toggleTimestamp);
+    document.getElementById('color-select')
+      .addEventListener('change', setColor);
+    document.getElementById('timestamp-font-size')
+      .addEventListener('change', setTimestampFontSize);
+    document.getElementById('reset-btn').addEventListener('click', resetAll);
+
+    loadFrameSize();
+  </script>
+</body>
+</html>
