@@ -1,0 +1,43 @@
+/* Gesture classes are added by robot-actions.js and removed after a delay. */
+
+/* ─── Say Hi: right arm raised and waving ───────────────────── */
+.robot-arm.gesture-hi {
+  animation: wave-arm 0.5s ease-in-out 3; /* 3 waves = 1.5s */
+  transform: rotate(-140deg);
+}
+
+@keyframes wave-arm {
+  0%,
+  100% {
+    transform: rotate(-140deg);
+  }
+  50% {
+    transform: rotate(-110deg);
+  }
+}
+
+
+/* ─── Jump ──────────────────────────────────────────────────── */
+.robot.gesture-jump {
+  animation: jump-up-down 0.6s ease-out 1;
+}
+
+@keyframes jump-up-down {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-80px);
+  }
+}
+
+
+/* ─── Give a Hug: both arms swing in front of the body ──────── */
+.robot-arm-left.gesture-hug {
+  transform: rotate(-90deg);
+}
+
+.robot-arm-right.gesture-hug {
+  transform: rotate(90deg);
+}

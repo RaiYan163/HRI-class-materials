@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Robot Control Dashboard</title>
+  <link rel="stylesheet" href="css/dashboard-styles.css">
+  <link rel="stylesheet" href="css/dashboard-controls.css">
+</head>
+<body>
+  <header class="page-header">
+    <h1>Robot Control Dashboard</h1>
+    <span id="connection-status" class="status-badge status-disconnected">
+      Disconnected
+    </span>
+  </header>
+
+  <p id="error-message" class="error-message" hidden></p>
+
+  <main class="panel-grid">
+    <section class="panel-card" id="talk-panel">
+      <h2>Talk with Robot</h2>
+      <div id="chat-log" class="chat-log"></div>
+      <form id="chat-form" class="chat-form">
+        <input id="message-input" type="text" autocomplete="off"
+          placeholder="Type a message..." maxlength="200">
+        <button type="submit" class="primary-button" id="btn-send">
+          Send
+        </button>
+      </form>
+    </section>
+
+    <section class="panel-card" id="move-panel">
+      <h2>Move Robot</h2>
+      <div class="dpad">
+        <button class="dpad-button dpad-up" data-direction="up"
+          aria-label="Move up">&#9650;</button>
+        <button class="dpad-button dpad-left" data-direction="left"
+          aria-label="Move left">&#9664;</button>
+        <button class="dpad-button dpad-right" data-direction="right"
+          aria-label="Move right">&#9654;</button>
+        <button class="dpad-button dpad-down" data-direction="down"
+          aria-label="Move down">&#9660;</button>
+      </div>
+    </section>
+
+    <section class="panel-card" id="gesture-panel">
+      <h2>Show Gesture</h2>
+      <div class="gesture-list">
+        <button class="gesture-button" data-gesture="hi">Say Hi</button>
+        <button class="gesture-button" data-gesture="jump">Jump</button>
+        <button class="gesture-button" data-gesture="hug">Give a Hug</button>
+      </div>
+    </section>
+  </main>
+
+  <script src="js/shared-config.js"></script>
+  <script src="js/dashboard-main.js"></script>
+</body>
+</html>

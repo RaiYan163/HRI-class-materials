@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Robot Simulator</title>
+  <link rel="stylesheet" href="css/robot-styles.css">
+  <link rel="stylesheet" href="css/robot-gestures.css">
+  <link rel="stylesheet" href="css/robot-speech.css">
+</head>
+<body>
+  <span id="connection-status" class="status-badge status-disconnected">
+    Disconnected
+  </span>
+
+  <div id="robot" class="robot">
+    <div id="speech-bubbles" class="speech-bubbles"></div>
+    <div class="robot-head">
+      <div class="robot-eye robot-eye-left"></div>
+      <div class="robot-eye robot-eye-right"></div>
+      <div class="robot-mouth"></div>
+    </div>
+    <div class="robot-body"></div>
+    <div id="arm-left" class="robot-arm robot-arm-left"></div>
+    <div id="arm-right" class="robot-arm robot-arm-right"></div>
+    <div class="robot-leg robot-leg-left"></div>
+    <div class="robot-leg robot-leg-right"></div>
+  </div>
+
+  <script src="js/shared-config.js"></script>
+  <script src="js/robot-actions.js"></script>
+  <script src="js/robot-main.js"></script>
+</body>
+</html>

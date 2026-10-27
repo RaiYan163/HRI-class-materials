@@ -1,0 +1,24 @@
+/* ─── Speech bubbles ────────────────────────────────────────── */
+.speech-bubbles {
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  width: 260px;
+  padding-bottom: 12px;
+}
+
+.speech-bubble {
+  max-width: 100%;
+  padding: 8px 14px;
+  border-radius: 14px;
+  background: #ffffff;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.18);
+  color: #1f2937;
+  text-align: center;
+  word-wrap: break-word;
+}
